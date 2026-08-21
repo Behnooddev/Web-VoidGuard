@@ -1,0 +1,48 @@
+[package]
+name = "winguard"
+version = "0.1.0"
+description = "WinGuard - Local Windows Security & System Monitoring"
+authors = ["you"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "1", features = [] }
+
+[dependencies]
+tauri = { version = "1", features = ["shell-open", "system-tray", "dialog"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sysinfo = "0.30"
+rusqlite = { version = "0.31", features = ["bundled", "chrono"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+tokio = { version = "1", features = ["full"] }
+thiserror = "1"
+anyhow = "1"
+sha2 = "0.10"
+notify = "6"
+dirs-next = "2"
+
+# Windows-specific system APIs (only compiled on Windows targets)
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.54", features = [
+    "Win32_Foundation",
+    "Win32_System_ProcessStatus",
+    "Win32_System_Threading",
+    "Win32_System_Services",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
+    "Win32_Networking_WinSock",
+    "Win32_Security",
+    "Win32_System_Registry",
+    "Win32_Storage_FileSystem",
+] }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
