@@ -14,6 +14,8 @@ use commands::services::{change_service_startup_type, control_service, list_serv
 use commands::files::{get_recent_file_events, get_watch_scopes, init_and_start_watching, init_handle as init_file_watcher_handle, FileWatcherHandle};
 use commands::startup::{list_startup_entries, remove_startup_entry};
 use commands::risk::{get_recent_risk_findings, run_risk_analysis};
+use commands::firewall::{create_firewall_rule, delete_firewall_rule, list_firewall_rules, set_firewall_rule_enabled};
+use commands::dns::change_dns;
 use models::{EventCategory, Severity};
 use tauri::Manager;
 
@@ -46,6 +48,11 @@ fn main() {
             remove_startup_entry,
             run_risk_analysis,
             get_recent_risk_findings,
+            list_firewall_rules,
+            create_firewall_rule,
+            set_firewall_rule_enabled,
+            delete_firewall_rule,
+            change_dns,
         ])
         .setup(|app| {
             // Record app start as the first event of the session and

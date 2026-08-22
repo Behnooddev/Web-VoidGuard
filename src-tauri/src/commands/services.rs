@@ -117,18 +117,27 @@ fn is_protected(name: &str) -> bool {
 #[cfg(windows)]
 mod windows_impl {
     use super::*;
-    use windows::core::PWSTR;
     use windows::Win32::Foundation::{CloseHandle, ERROR_INSUFFICIENT_BUFFER};
+    use windows::Win32::Security::SC_HANDLE;
     use windows::Win32::System::Services::{
         ChangeServiceConfigW, CloseServiceHandle, ControlService, EnumServicesStatusExW,
         OpenSCManagerW, OpenServiceW, QueryServiceConfigW, StartServiceW,
-        ENUM_SERVICE_STATUS_PROCESSW, QUERY_SERVICE_CONFIGW, SC_ENUM_PROCESS_INFO,
-        SC_MANAGER_ENUMERATE_SERVICE, SERVICE_ACTIVE, SERVICE_AUTO_START, SERVICE_CONFIG_DESCRIPTION,
-        SERVICE_CONTROL_STOP, SERVICE_DEMAND_START, SERVICE_DISABLED, SERVICE_INACTIVE,
-        SERVICE_NO_CHANGE, SERVICE_QUERY_CONFIG, SERVICE_QUERY_STATUS, SERVICE_RUNNING,
-        SERVICE_START, SERVICE_START_PENDING, SERVICE_STATUS, SERVICE_STOP, SERVICE_STOPPED,
-        SERVICE_STOP_PENDING, SERVICE_WIN32,
+        ENUM_SERVICE_STATUS_PROCESSW, ENUM_SERVICE_TYPE, QUERY_SERVICE_CONFIGW,
+        SC_ENUM_PROCESS_INFO, SC_MANAGER_ENUMERATE_SERVICE, SERVICE_AUTO_START,
+        SERVICE_CONFIG_DESCRIPTION, SERVICE_CONTROL_STOP, SERVICE_DEMAND_START, SERVICE_DISABLED,
+        SERVICE_ERROR, SERVICE_NO_CHANGE, SERVICE_QUERY_CONFIG, SERVICE_QUERY_STATUS,
+        SERVICE_RUNNING, SERVICE_START, SERVICE_START_PENDING, SERVICE_STATE_ALL, SERVICE_STATUS,
+        SERVICE_STATUS_CURRENT_STATE, SERVICE_STOP, SERVICE_STOPPED, SERVICE_STOP_PENDING,
+        SERVICE_WIN32,
     };
+
+    /// `ChangeServiceConfigW`'s "leave this unchanged" sentinel
+    /// (`SERVICE_NO_CHANGE`, `0xFFFFFFFF`) is exposed by the `windows`
+    /// crate as a bare `u32`, but the parameters that take it
+    /// (`dwServiceType`/`dwErrorControl`) are typed `ENUM_SERVICE_TYPE`/
+    /// `SERVICE_ERROR` — these wrap it in the right type for each.
+    const NO_CHANGE_TYPE: ENUM_SERVICE_TYPE = ENUM_SERVICE_TYPE(SERVICE_NO_CHANGE);
+    const NO_CHANGE_ERROR: SERVICE_ERROR = SERVICE_ERROR(SERVICE_NO_CHANGE);
 
     pub fn enumerate_services() -> Result<Vec<ServiceInfo>, AppError> {
         unsafe {
@@ -144,7 +153,7 @@ mod windows_impl {
                 scm,
                 SC_ENUM_PROCESS_INFO,
                 SERVICE_WIN32,
-                SERVICE_ACTIVE | SERVICE_INACTIVE,
+                SERVICE_STATE_ALL,
                 None,
                 &mut bytes_needed,
                 &mut services_returned,
@@ -157,7 +166,7 @@ mod windows_impl {
                 scm,
                 SC_ENUM_PROCESS_INFO,
                 SERVICE_WIN32,
-                SERVICE_ACTIVE | SERVICE_INACTIVE,
+                SERVICE_STATE_ALL,
                 Some(&mut buffer),
                 &mut bytes_needed,
                 &mut services_returned,
@@ -202,10 +211,7 @@ mod windows_impl {
         }
     }
 
-    unsafe fn query_config(
-        scm: windows::Win32::System::Services::SC_HANDLE,
-        name: &str,
-    ) -> (StartupType, Option<String>) {
+    unsafe fn query_config(scm: SC_HANDLE, name: &str) -> (StartupType, Option<String>) {
         let wide: Vec<u16> = name.encode_utf16().chain(std::iter::once(0)).collect();
         let Ok(handle) = OpenServiceW(
             scm,
@@ -228,9 +234,9 @@ mod windows_impl {
         let result = if ok.is_ok() {
             let cfg = &*(buf.as_ptr() as *const QUERY_SERVICE_CONFIGW);
             let startup = match cfg.dwStartType {
-                t if t == SERVICE_AUTO_START.0 => StartupType::Automatic,
-                t if t == SERVICE_DEMAND_START.0 => StartupType::Manual,
-                t if t == SERVICE_DISABLED.0 => StartupType::Disabled,
+                t if t == SERVICE_AUTO_START => StartupType::Automatic,
+                t if t == SERVICE_DEMAND_START => StartupType::Manual,
+                t if t == SERVICE_DISABLED => StartupType::Disabled,
                 _ => StartupType::Unknown,
             };
             let exe = if !cfg.lpBinaryPathName.is_null() {
@@ -247,12 +253,12 @@ mod windows_impl {
         result
     }
 
-    fn map_status(state: u32) -> ServiceStatus {
+    fn map_status(state: SERVICE_STATUS_CURRENT_STATE) -> ServiceStatus {
         match state {
-            s if s == SERVICE_RUNNING.0 => ServiceStatus::Running,
-            s if s == SERVICE_STOPPED.0 => ServiceStatus::Stopped,
-            s if s == SERVICE_START_PENDING.0 => ServiceStatus::StartPending,
-            s if s == SERVICE_STOP_PENDING.0 => ServiceStatus::StopPending,
+            s if s == SERVICE_RUNNING => ServiceStatus::Running,
+            s if s == SERVICE_STOPPED => ServiceStatus::Stopped,
+            s if s == SERVICE_START_PENDING => ServiceStatus::StartPending,
+            s if s == SERVICE_STOP_PENDING => ServiceStatus::StopPending,
             _ => ServiceStatus::Unknown,
         }
     }
@@ -292,9 +298,14 @@ mod windows_impl {
                     let start = StartServiceW(handle, None);
                     match (stop, start) {
                         (_, Ok(_)) => Ok(()),
-                        (Err(e), _) => {
-                            Err(scm_error("Windows refused to restart the service.", e))
-                        }
+                        (Ok(_), Err(e)) => Err(scm_error(
+                            "The service stopped, but Windows refused to start it again.",
+                            e,
+                        )),
+                        (Err(e), Err(_)) => Err(scm_error(
+                            "Windows refused to stop the service, so the restart did not proceed.",
+                            e,
+                        )),
                     }
                 }
             };
@@ -340,9 +351,9 @@ mod windows_impl {
 
             let result = ChangeServiceConfigW(
                 handle,
-                SERVICE_NO_CHANGE,
+                NO_CHANGE_TYPE,
                 start_type,
-                SERVICE_NO_CHANGE,
+                NO_CHANGE_ERROR,
                 None,
                 None,
                 None,

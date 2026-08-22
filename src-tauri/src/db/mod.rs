@@ -136,12 +136,18 @@ fn run_migrations(conn: &Connection) -> Result<()> {
             last_seen TEXT
         );
 
+        -- Phase 4: tracks the firewall rules VoidGuard itself created
+        -- (via commands::firewall), not the entire system rule set.
+        -- `name` is unique so `create_firewall_rule` can upsert safely
+        -- if the same rule name is recreated after being edited.
         CREATE TABLE IF NOT EXISTS firewall_rules (
             id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
+            name TEXT NOT NULL UNIQUE,
+            description TEXT,
             protocol TEXT,
             local_port TEXT,
             remote_port TEXT,
+            remote_addresses TEXT,
             application TEXT,
             direction TEXT,
             action TEXT,

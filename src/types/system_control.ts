@@ -1,4 +1,6 @@
 export interface NetworkAdapter {
+  /** GUID identifying this adapter — pass this (never `name`) to changeDns. */
+  adapter_id: string;
   name: string;
   description: string;
   adapter_type: "Ethernet" | "Wi-Fi" | "VPN" | "Loopback" | "Other";
@@ -47,4 +49,14 @@ export interface ServiceActionRequest {
 export interface ChangeStartupTypeRequest {
   service_name: string;
   startup_type: StartupType;
+}
+
+export type DnsMode = "DHCP" | "STATIC";
+
+export interface DnsSettingsRequest {
+  adapter_id: string;
+  mode: DnsMode;
+  /** Required when mode is STATIC. */
+  primary_dns: string | null;
+  secondary_dns: string | null;
 }

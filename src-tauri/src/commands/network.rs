@@ -20,9 +20,9 @@ mod windows_impl {
     use super::*;
     use windows::Win32::Foundation::{ERROR_BUFFER_OVERFLOW, ERROR_SUCCESS};
     use windows::Win32::NetworkManagement::IpHelper::{
-        GetAdaptersAddresses, GAA_FLAG_INCLUDE_GATEWAYS, GAA_FLAG_INCLUDE_PREFIX,
-        IF_TYPE_ETHERNET_CSMACD, IF_TYPE_IEEE80211, IF_TYPE_PPP, IF_TYPE_SOFTWARE_LOOPBACK,
-        IP_ADAPTER_ADDRESSES_LH,
+        GetAdaptersAddresses, GET_ADAPTERS_ADDRESSES_FLAGS, GAA_FLAG_INCLUDE_GATEWAYS,
+        GAA_FLAG_INCLUDE_PREFIX, IF_TYPE_ETHERNET_CSMACD, IF_TYPE_IEEE80211, IF_TYPE_PPP,
+        IF_TYPE_SOFTWARE_LOOPBACK, IP_ADAPTER_ADDRESSES_LH,
     };
     use windows::Win32::Networking::WinSock::{AF_UNSPEC, SOCKADDR_IN, SOCKADDR_IN6};
 
@@ -34,7 +34,11 @@ mod windows_impl {
                 buffer = vec![0u8; size as usize];
                 let result = GetAdaptersAddresses(
                     AF_UNSPEC.0 as u32,
-                    GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
+                    // GET_ADAPTERS_ADDRESSES_FLAGS doesn't derive BitOr —
+                    // combine the raw bits and wrap once instead.
+                    GET_ADAPTERS_ADDRESSES_FLAGS(
+                        GAA_FLAG_INCLUDE_PREFIX.0 | GAA_FLAG_INCLUDE_GATEWAYS.0,
+                    ),
                     None,
                     Some(buffer.as_mut_ptr() as *mut IP_ADAPTER_ADDRESSES_LH),
                     &mut size,
@@ -67,6 +71,7 @@ mod windows_impl {
     }
 
     unsafe fn parse_adapter(adapter: &IP_ADAPTER_ADDRESSES_LH) -> NetworkAdapter {
+        let adapter_id = ansi_to_string(adapter.AdapterName.0);
         let name = wide_to_string(adapter.FriendlyName.0);
         let description = wide_to_string(adapter.Description.0);
 
@@ -154,6 +159,7 @@ mod windows_impl {
         }
 
         NetworkAdapter {
+            adapter_id,
             name,
             description,
             adapter_type,
@@ -163,7 +169,12 @@ mod windows_impl {
             ipv6_addresses,
             gateway,
             dns_servers,
-            dhcp_enabled: Some(adapter.Flags & 0x0004 != 0), // IP_ADAPTER_DHCP_ENABLED
+            // `Flags` sits inside an anonymous union (`Anonymous2` in
+            // this crate's generated bindings) alongside per-bit fields —
+            // reading the raw combined value, like the C code does,
+            // means going through `.Anonymous2.Flags` rather than a
+            // top-level `adapter.Flags` (that field doesn't exist).
+            dhcp_enabled: Some(adapter.Anonymous2.Flags & 0x0004 != 0), // IP_ADAPTER_DHCP_ENABLED
             link_speed_mbps: if adapter.TransmitLinkSpeed > 0 {
                 Some(adapter.TransmitLinkSpeed / 1_000_000)
             } else {
@@ -182,5 +193,20 @@ mod windows_impl {
         }
         let slice = std::slice::from_raw_parts(ptr, len);
         String::from_utf16_lossy(slice)
+    }
+
+    /// `AdapterName` (unlike `FriendlyName`/`Description`) is an ANSI,
+    /// not wide, C string — it's the adapter GUID, e.g.
+    /// `{4D36E972-E325-11CE-BFC1-08002BE10318}`.
+    unsafe fn ansi_to_string(ptr: *const u8) -> String {
+        if ptr.is_null() {
+            return String::new();
+        }
+        let mut len = 0usize;
+        while *ptr.add(len) != 0 {
+            len += 1;
+        }
+        let slice = std::slice::from_raw_parts(ptr, len);
+        String::from_utf8_lossy(slice).to_string()
     }
 }

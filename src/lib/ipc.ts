@@ -5,11 +5,17 @@ import type { AppError, ProcessInfo } from "@/types/process";
 import type { ListeningPort, PortRuleRequest } from "@/types/ports";
 import type {
   ChangeStartupTypeRequest,
+  DnsSettingsRequest,
   NetworkAdapter,
   ServiceActionRequest,
   ServiceInfo,
 } from "@/types/system_control";
 import type { FileEvent, RiskFinding, StartupEntry, WatchScope } from "@/types/monitoring";
+import type {
+  CreateFirewallRuleRequest,
+  FirewallRule,
+  SetFirewallRuleEnabledRequest,
+} from "@/types/firewall";
 
 /**
  * Every function here corresponds 1:1 to a #[tauri::command] in the
@@ -40,7 +46,7 @@ export function listProcesses(): Promise<ProcessInfo[]> {
  * Rejects with a structured AppError, never a bare string, on failure.
  */
 export function terminateProcess(pid: number): Promise<void> {
-  return invoke("terminate_process", { pid }).catch((e: AppError | string) => {
+  return invoke<void>("terminate_process", { pid }).catch((e: AppError | string) => {
     throw typeof e === "string" ? { code: "UNKNOWN", message: e, details: null, recoverable: true } : e;
   });
 }
@@ -112,6 +118,29 @@ export function runRiskAnalysis(): Promise<RiskFinding[]> {
 
 export function getRecentRiskFindings(limit = 20): Promise<RiskFinding[]> {
   return invoke("get_recent_risk_findings", { limit });
+}
+
+export function listFirewallRules(): Promise<FirewallRule[]> {
+  return wrapAppError(invoke("list_firewall_rules"));
+}
+
+/** Creates a new Windows Firewall rule. Requires prior UI confirmation. */
+export function createFirewallRule(req: CreateFirewallRuleRequest): Promise<void> {
+  return wrapAppError(invoke("create_firewall_rule", { req }));
+}
+
+export function setFirewallRuleEnabled(req: SetFirewallRuleEnabledRequest): Promise<void> {
+  return wrapAppError(invoke("set_firewall_rule_enabled", { req }));
+}
+
+/** Deletes a firewall rule VoidGuard created. Requires prior UI confirmation. */
+export function deleteFirewallRule(name: string): Promise<void> {
+  return wrapAppError(invoke("delete_firewall_rule", { name }));
+}
+
+/** Applies per-interface DNS settings. Requires prior UI confirmation. */
+export function changeDns(req: DnsSettingsRequest): Promise<void> {
+  return wrapAppError(invoke("change_dns", { req }));
 }
 
 export function onSystemMetrics(

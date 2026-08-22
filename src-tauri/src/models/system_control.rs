@@ -2,6 +2,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NetworkAdapter {
+    /// The adapter's GUID (e.g. `{4D36E972-...}`), from `GetAdaptersAddresses`'
+    /// `AdapterName` field. This — never `name` — is what identifies the
+    /// adapter to `commands::dns::change_dns`: friendly names can repeat
+    /// or change, the GUID doesn't.
+    pub adapter_id: String,
     pub name: String,
     pub description: String,
     pub adapter_type: String, // "Ethernet" | "Wi-Fi" | "VPN" | "Loopback" | "Other"
@@ -68,4 +73,25 @@ pub struct ServiceActionRequest {
 pub struct ChangeStartupTypeRequest {
     pub service_name: String,
     pub startup_type: StartupType,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum DnsMode {
+    Dhcp,
+    Static,
+}
+
+/// Typed request to change one adapter's DNS configuration. Always
+/// re-validated server-side (see `commands::dns::change_dns`) — the
+/// frontend's own IPv4 checks are just for fast feedback, never trusted.
+#[derive(Debug, Clone, Deserialize)]
+pub struct DnsSettingsRequest {
+    /// Must be a `NetworkAdapter::adapter_id`, not a display name.
+    pub adapter_id: String,
+    pub mode: DnsMode,
+    /// Required when `mode` is `STATIC`; ignored for `DHCP`.
+    pub primary_dns: Option<String>,
+    /// Optional even in `STATIC` mode.
+    pub secondary_dns: Option<String>,
 }

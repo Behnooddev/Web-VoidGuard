@@ -8,6 +8,7 @@ import ServicesPage from "@/pages/ServicesPage";
 import FilesPage from "@/pages/FilesPage";
 import StartupPage from "@/pages/StartupPage";
 import EventsPage from "@/pages/EventsPage";
+import FirewallPage from "@/pages/FirewallPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 
 type Theme = "light" | "dark" | "system";
@@ -54,10 +55,7 @@ export default function App() {
           />
           <Route path="/processes" element={<ProcessesPage />} />
           <Route path="/network" element={<NetworkPage />} />
-          <Route
-            path="/firewall"
-            element={<PlaceholderPage title="Firewall" phase="Phase 4 (firewall management)" />}
-          />
+          <Route path="/firewall" element={<FirewallPage />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/files" element={<FilesPage />} />
           <Route path="/startup" element={<StartupPage />} />
