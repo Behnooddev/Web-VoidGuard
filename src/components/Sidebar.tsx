@@ -48,7 +48,7 @@ export default function Sidebar() {
       <div className="flex items-center gap-2 px-4 h-14 border-b border-border">
         <ShieldCheck className="h-6 w-6 text-primary shrink-0" />
         {!collapsed && (
-          <span className="font-semibold tracking-tight text-sm">WinGuard</span>
+          <span className="font-semibold tracking-tight text-sm">VoidGuard</span>
         )}
       </div>
 

@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import Dashboard from "@/pages/Dashboard";
 import ProcessesPage from "@/pages/ProcessesPage";
+import NetworkPage from "@/pages/NetworkPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 
 type Theme = "light" | "dark" | "system";
@@ -48,10 +49,7 @@ export default function App() {
             element={<PlaceholderPage title="Security" phase="Phase 5 (security scoring)" />}
           />
           <Route path="/processes" element={<ProcessesPage />} />
-          <Route
-            path="/network"
-            element={<PlaceholderPage title="Network" phase="Phase 2 (network interfaces)" />}
-          />
+          <Route path="/network" element={<NetworkPage />} />
           <Route
             path="/firewall"
             element={<PlaceholderPage title="Firewall" phase="Phase 4 (firewall management)" />}

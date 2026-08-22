@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import type { AuditEntry, SystemEvent, SystemMetrics } from "@/types";
 import type { AppError, ProcessInfo } from "@/types/process";
+import type { ListeningPort, PortRuleRequest } from "@/types/ports";
 
 /**
  * Every function here corresponds 1:1 to a #[tauri::command] in the
@@ -35,6 +36,33 @@ export function terminateProcess(pid: number): Promise<void> {
   return invoke("terminate_process", { pid }).catch((e: AppError | string) => {
     throw typeof e === "string" ? { code: "UNKNOWN", message: e, details: null, recoverable: true } : e;
   });
+}
+
+function wrapAppError<T>(p: Promise<T>): Promise<T> {
+  return p.catch((e: AppError | string) => {
+    throw typeof e === "string"
+      ? { code: "UNKNOWN", message: e, details: null, recoverable: true }
+      : e;
+  });
+}
+
+export function listListeningPorts(): Promise<ListeningPort[]> {
+  return wrapAppError(invoke("list_listening_ports"));
+}
+
+/** Terminates the process bound to a port. Requires prior UI confirmation. */
+export function terminatePortOwner(port: number, pid: number): Promise<void> {
+  return wrapAppError(invoke("terminate_port_owner", { port, pid }));
+}
+
+/** Allows a port through Windows Firewall. Requires prior UI confirmation. */
+export function openPort(req: PortRuleRequest): Promise<void> {
+  return wrapAppError(invoke("open_port", { req }));
+}
+
+/** Blocks/removes the allow rule for a port. Requires prior UI confirmation. */
+export function closePort(req: PortRuleRequest): Promise<void> {
+  return wrapAppError(invoke("close_port", { req }));
 }
 
 export function onSystemMetrics(

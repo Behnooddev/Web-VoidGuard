@@ -10,17 +10,17 @@ use std::sync::Mutex;
 pub struct Db(pub Mutex<Connection>);
 
 pub fn app_data_dir() -> PathBuf {
-    // On Windows this resolves to %APPDATA%/WinGuard via Tauri's path
+    // On Windows this resolves to %APPDATA%/VoidGuard via Tauri's path
     // resolver at runtime; here we fall back to a local dir for
     // non-Windows dev/testing.
     let base = dirs_next::data_dir().unwrap_or_else(|| PathBuf::from("."));
-    base.join("WinGuard")
+    base.join("VoidGuard")
 }
 
 pub fn init() -> Result<Db> {
     let dir = app_data_dir();
     std::fs::create_dir_all(&dir)?;
-    let db_path = dir.join("winguard.db");
+    let db_path = dir.join("voidguard.db");
     let conn = Connection::open(db_path)?;
     conn.pragma_update(None, "journal_mode", "WAL")?;
     conn.pragma_update(None, "foreign_keys", "ON")?;

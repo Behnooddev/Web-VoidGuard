@@ -29,14 +29,14 @@ failure — before returning a structured result to the UI.
 | `commands::system` | CPU/RAM/disk/uptime metrics via `sysinfo` | Phase 1 done |
 | `commands::events` | Insert/query normalized `events` rows | Phase 1 done |
 | `commands::audit` | Append-only `audit_logs` writes/reads | Phase 1 done |
-| `commands::process` | Process listing, details, safe termination | Phase 2 |
-| `commands::network` | Adapter enumeration (IPv4/IPv6/gateway/DNS/MAC) | Phase 2 |
-| `commands::ports` | Listening TCP/UDP endpoints via `GetExtendedTcpTable`/`GetExtendedUdpTable` | Phase 2 |
-| `commands::services` | SCM enumeration + start/stop/restart/startup-type | Phase 2 |
+| `commands::process` | Process listing, details, safe termination | Phase 2 — done |
+| `commands::network` | Adapter enumeration (IPv4/IPv6/gateway/DNS/MAC) | Phase 2 — remaining |
+| `commands::ports` | Listening endpoints, terminate owner, open/close port via Firewall COM API | Phase 2 — done (Windows-native, unverified compile — see `handoffs/02-phase-2-handoff.md`) |
+| `commands::services` | SCM enumeration + start/stop/restart/startup-type | Phase 2 — remaining |
 | `commands::files` | File-integrity watcher (`notify` crate) over configured scopes | Phase 3 |
 | `commands::startup` | Run/RunOnce keys, Startup folders, scheduled tasks, services-as-persistence | Phase 3 |
 | `commands::risk` | Event correlation → composite risk score | Phase 3 |
-| `commands::firewall` | Windows Filtering Platform / `netsh advfirewall` COM interfaces | Phase 4 |
+| `commands::firewall` | Full rule management (beyond single-port open/close, already done in Phase 2) via WFP/`INetFwPolicy2` COM | Phase 4 |
 | `commands::dns` | Per-interface DNS read/validate/apply | Phase 4 |
 | `commands::scan` | Quick/System/Network/Startup/Integrity/Custom scans | Phase 5 |
 | `commands::security_score` | Aggregate scoring engine with explained reasons | Phase 5 |
@@ -76,7 +76,7 @@ their own typed events rather than being polled from the frontend.
 
 ## Database
 
-SQLite, WAL mode, one file under `%APPDATA%/WinGuard/winguard.db`.
+SQLite, WAL mode, one file under `%APPDATA%/VoidGuard/voidguard.db`.
 Migrations are forward-only and additive (see `db::run_migrations`);
 each phase adds tables, never rewrites earlier ones. Retention/cleanup
 of high-volume tables (`events`, `process_snapshots`, `port_snapshots`)

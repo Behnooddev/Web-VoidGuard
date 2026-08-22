@@ -54,7 +54,7 @@ implementations:
 
 ## Database inspection
 
-The SQLite file lives at `%APPDATA%/WinGuard/winguard.db`. Any SQLite
+The SQLite file lives at `%APPDATA%/VoidGuard/voidguard.db`. Any SQLite
 browser (e.g. DB Browser for SQLite) can open it directly — do this
 rather than adding ad-hoc debug `println!`s for data you can just
 query.

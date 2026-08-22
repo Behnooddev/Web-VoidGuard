@@ -8,6 +8,7 @@ use commands::system::{get_system_metrics, init_handle, SysHandle};
 use commands::events::{get_recent_events, record_event};
 use commands::audit::get_audit_log;
 use commands::process::{list_processes, terminate_process};
+use commands::ports::{close_port, list_listening_ports, open_port, terminate_port_owner};
 use models::{EventCategory, Severity};
 use tauri::Manager;
 
@@ -24,6 +25,10 @@ fn main() {
             get_audit_log,
             list_processes,
             terminate_process,
+            list_listening_ports,
+            terminate_port_owner,
+            open_port,
+            close_port,
         ])
         .setup(|app| {
             // Record app start as the first event of the session and
@@ -40,7 +45,7 @@ fn main() {
                     EventCategory::SystemStarted,
                     Severity::Info,
                     "app",
-                    "WinGuard started",
+                    "VoidGuard started",
                     None,
                 );
             }
@@ -60,5 +65,5 @@ fn main() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running WinGuard");
+        .expect("error while running VoidGuard");
 }

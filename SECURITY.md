@@ -1,13 +1,13 @@
 # Security Model
 
-WinGuard is a **local, defensive** system-monitoring and
+VoidGuard is a **local, defensive** system-monitoring and
 administration tool. This document states what it will and will not
 do, and how the privilege boundary is enforced in code — not just in
 policy.
 
 ## Hard constraints (enforced, not aspirational)
 
-WinGuard does **not** implement, and any contribution that adds any
+VoidGuard does **not** implement, and any contribution that adds any
 of the following should be rejected in review:
 
 - Arbitrary shell / `cmd.exe` / PowerShell execution

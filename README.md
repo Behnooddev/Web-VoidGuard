@@ -1,22 +1,37 @@
-# WinGuard
+# VoidGuard
 
 A local Windows security and system-monitoring desktop application:
 process/service/network/port visibility, firewall and DNS management,
 file-integrity and startup monitoring, event correlation, risk
 scoring, and a full audit trail.
 
-WinGuard is a **defensive** tool for systems you own or are authorized
+VoidGuard is a **defensive** tool for systems you own or are authorized
 to administer. It has no remote-control, shell-execution, or
 persistence capability of its own — see `SECURITY.md`.
 
+## Repository contents
+
+- `src/`, `src-tauri/` — the application itself (see above)
+- `handoffs/` — one document per completed/in-progress phase: what
+  shipped, what's left, and what needs verifying next
+- `wiki/` — source markdown for the GitHub Wiki (copy into the Wiki
+  tab, or clone `<repo>.wiki.git` and drop these in)
+- `docs/` — the informational GitHub Pages site (`OWNER.github.io/voidguard/`).
+  **Documentation only** — it has no connection to and cannot control
+  any device, including the one running VoidGuard
+- `.github/` — issue templates, PR template, CI workflow, Pages deploy workflow
+
+> Replace `OWNER` in `docs/index.html`, `wiki/*.md`, and this README
+> with the actual GitHub username/org once the repo is created.
+
 ## Status
 
-This repository currently implements **Phase 1** of the plan in
-`ARCHITECTURE.md`: app shell, navigation, dashboard with live CPU /
-RAM / disk / process-count / uptime metrics, SQLite schema for every
-subsystem, and the event + audit-log backend and read APIs. Every
-other sidebar page is an explicit, labeled "not implemented yet"
-state — nothing in the UI is faked.
+This repository currently implements **Phase 1** (complete) and part
+of **Phase 2** (process manager and open-port monitoring/control are
+live; network adapters and services manager are next) of the plan in
+`ARCHITECTURE.md`. See `handoffs/` for the detailed, dated record of
+what shipped in each phase. Every other sidebar page is an explicit,
+labeled "not implemented yet" state — nothing in the UI is faked.
 
 ## Stack
 
