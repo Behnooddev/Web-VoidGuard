@@ -30,9 +30,9 @@ failure — before returning a structured result to the UI.
 | `commands::events` | Insert/query normalized `events` rows | Phase 1 done |
 | `commands::audit` | Append-only `audit_logs` writes/reads | Phase 1 done |
 | `commands::process` | Process listing, details, safe termination | Phase 2 — done |
-| `commands::network` | Adapter enumeration (IPv4/IPv6/gateway/DNS/MAC) | Phase 2 — remaining |
+| `commands::network` | Adapter enumeration (IPv4/IPv6/gateway/DNS/MAC) | Phase 2 — done |
 | `commands::ports` | Listening endpoints, terminate owner, open/close port via Firewall COM API | Phase 2 — done (Windows-native, unverified compile — see `handoffs/02-phase-2-handoff.md`) |
-| `commands::services` | SCM enumeration + start/stop/restart/startup-type | Phase 2 — remaining |
+| `commands::services` | SCM enumeration + start/stop/restart/startup-type | Phase 2 — done (Windows-native, unverified compile) |
 | `commands::files` | File-integrity watcher (`notify` crate) over configured scopes | Phase 3 |
 | `commands::startup` | Run/RunOnce keys, Startup folders, scheduled tasks, services-as-persistence | Phase 3 |
 | `commands::risk` | Event correlation → composite risk score | Phase 3 |
@@ -95,7 +95,7 @@ is a Phase 6 (Performance/hardening) task, configurable from Settings.
 ## Phased build plan
 
 1. Tauri setup, React shell, sidebar/dashboard, SQLite, event+audit backend — **done**
-2. Process monitoring, network interfaces, open ports, service monitoring
+2. Process monitoring, network interfaces, open ports, service monitoring — **done** (native Windows code not yet compiled/tested — see `handoffs/02-phase-2-handoff.md`)
 3. File integrity monitoring, startup/persistence monitoring, event engine, risk engine
 4. Firewall management, DNS management, privileged-operation plumbing, audit UI
 5. Scanning system, security scoring, notifications, dashboard polish

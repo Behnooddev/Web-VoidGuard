@@ -26,11 +26,13 @@ persistence capability of its own — see `SECURITY.md`.
 
 ## Status
 
-This repository currently implements **Phase 1** (complete) and part
-of **Phase 2** (process manager and open-port monitoring/control are
-live; network adapters and services manager are next) of the plan in
-`ARCHITECTURE.md`. See `handoffs/` for the detailed, dated record of
-what shipped in each phase. Every other sidebar page is an explicit,
+This repository currently implements **Phase 1** and **Phase 2** of the
+plan in `ARCHITECTURE.md`: app shell, dashboard, process manager, open
+port monitoring/control, network adapter view, and services manager
+are all functional. See `handoffs/` for the detailed, dated record of
+what shipped in each phase — including a debugging checklist for
+Phase 2's native Windows code, which has not yet been compiled on an
+actual Windows machine. Every other sidebar page is an explicit,
 labeled "not implemented yet" state — nothing in the UI is faked.
 
 ## Stack

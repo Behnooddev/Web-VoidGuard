@@ -23,8 +23,8 @@ calls the Windows API, and writes an audit entry before returning.
 | Audit log | ✅ Done |
 | Process manager | ✅ Done |
 | Open port monitoring + terminate/open/close | ✅ Done (Windows-native, unverified compile — see [[Port-Control]]) |
-| Network adapter enumeration | ⏳ Not started |
-| Services manager | ⏳ Not started |
+| Network adapter enumeration | ✅ Done (Windows-native, unverified compile) |
+| Services manager | ✅ Done (Windows-native, unverified compile) |
 | File integrity monitoring | ⏳ Not started |
 | Startup/persistence monitoring | ⏳ Not started |
 | Event correlation / risk engine | ⏳ Not started |

@@ -3,6 +3,12 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import type { AuditEntry, SystemEvent, SystemMetrics } from "@/types";
 import type { AppError, ProcessInfo } from "@/types/process";
 import type { ListeningPort, PortRuleRequest } from "@/types/ports";
+import type {
+  ChangeStartupTypeRequest,
+  NetworkAdapter,
+  ServiceActionRequest,
+  ServiceInfo,
+} from "@/types/system_control";
 
 /**
  * Every function here corresponds 1:1 to a #[tauri::command] in the
@@ -63,6 +69,23 @@ export function openPort(req: PortRuleRequest): Promise<void> {
 /** Blocks/removes the allow rule for a port. Requires prior UI confirmation. */
 export function closePort(req: PortRuleRequest): Promise<void> {
   return wrapAppError(invoke("close_port", { req }));
+}
+
+export function listNetworkAdapters(): Promise<NetworkAdapter[]> {
+  return wrapAppError(invoke("list_network_adapters"));
+}
+
+export function listServices(): Promise<ServiceInfo[]> {
+  return wrapAppError(invoke("list_services"));
+}
+
+/** Start/stop/restart a service. Requires prior UI confirmation — stronger for protected services. */
+export function controlService(req: ServiceActionRequest): Promise<void> {
+  return wrapAppError(invoke("control_service", { req }));
+}
+
+export function changeServiceStartupType(req: ChangeStartupTypeRequest): Promise<void> {
+  return wrapAppError(invoke("change_service_startup_type", { req }));
 }
 
 export function onSystemMetrics(

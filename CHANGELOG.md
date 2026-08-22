@@ -3,7 +3,18 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased] — Phase 2 (in progress)
+## [Unreleased] — Phase 3 not started
+
+### Added (Phase 2 completion)
+- Network Adapters tab: full adapter list (IPv4/IPv6/gateway/DNS/MAC/
+  DHCP/link speed) via native `GetAdaptersAddresses`.
+- Services Manager: list, start/stop/restart, and change startup type
+  via native Service Control Manager APIs, with an extra-strength
+  confirmation for a starter set of protected system services.
+- Phase 2 marked complete in `handoffs/02-phase-2-handoff.md`, with a
+  prioritized checklist for the first Windows compile/debug pass.
+
+## Phase 2 (process + ports)
 
 ### Added
 - Process Manager: live process table, search, sort, confirmed termination.

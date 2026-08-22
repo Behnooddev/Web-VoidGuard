@@ -1,10 +1,11 @@
 pub mod audit;
 pub mod events;
+pub mod network;
 pub mod ports;
 pub mod process;
+pub mod services;
 pub mod system;
 
-// Phase 2 remaining: network.rs, services.rs
 // Phase 3+ will add: files.rs, startup.rs, risk.rs
 // firewall.rs (full rule management beyond port open/close) — Phase 4
 // Phase 4+ will add: firewall.rs, dns.rs

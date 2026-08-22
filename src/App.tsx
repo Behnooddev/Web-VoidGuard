@@ -4,6 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import Dashboard from "@/pages/Dashboard";
 import ProcessesPage from "@/pages/ProcessesPage";
 import NetworkPage from "@/pages/NetworkPage";
+import ServicesPage from "@/pages/ServicesPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 
 type Theme = "light" | "dark" | "system";
@@ -54,10 +55,7 @@ export default function App() {
             path="/firewall"
             element={<PlaceholderPage title="Firewall" phase="Phase 4 (firewall management)" />}
           />
-          <Route
-            path="/services"
-            element={<PlaceholderPage title="Services" phase="Phase 2 (service monitoring)" />}
-          />
+          <Route path="/services" element={<ServicesPage />} />
           <Route
             path="/files"
             element={<PlaceholderPage title="Files" phase="Phase 3 (file integrity monitoring)" />}

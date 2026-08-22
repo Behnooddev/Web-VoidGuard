@@ -9,6 +9,8 @@ use commands::events::{get_recent_events, record_event};
 use commands::audit::get_audit_log;
 use commands::process::{list_processes, terminate_process};
 use commands::ports::{close_port, list_listening_ports, open_port, terminate_port_owner};
+use commands::network::list_network_adapters;
+use commands::services::{change_service_startup_type, control_service, list_services};
 use models::{EventCategory, Severity};
 use tauri::Manager;
 
@@ -29,6 +31,10 @@ fn main() {
             terminate_port_owner,
             open_port,
             close_port,
+            list_network_adapters,
+            list_services,
+            control_service,
+            change_service_startup_type,
         ])
         .setup(|app| {
             // Record app start as the first event of the session and
