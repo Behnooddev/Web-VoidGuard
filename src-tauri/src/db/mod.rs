@@ -186,6 +186,26 @@ fn run_migrations(conn: &Connection) -> Result<()> {
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
         );
+
+        CREATE TABLE IF NOT EXISTS watch_scopes (
+            path TEXT PRIMARY KEY,
+            recursive INTEGER NOT NULL DEFAULT 1,
+            label TEXT NOT NULL,
+            built_in INTEGER NOT NULL DEFAULT 0
+        );
+
+        CREATE TABLE IF NOT EXISTS risk_findings (
+            id TEXT PRIMARY KEY,
+            timestamp TEXT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            severity TEXT NOT NULL,
+            confidence TEXT NOT NULL,
+            evidence TEXT NOT NULL,
+            remediation TEXT,
+            related_event_ids TEXT NOT NULL DEFAULT '[]'
+        );
+        CREATE INDEX IF NOT EXISTS idx_risk_findings_ts ON risk_findings(timestamp DESC);
         "#,
     )?;
 

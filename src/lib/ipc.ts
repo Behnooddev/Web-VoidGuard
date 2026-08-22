@@ -9,6 +9,7 @@ import type {
   ServiceActionRequest,
   ServiceInfo,
 } from "@/types/system_control";
+import type { FileEvent, RiskFinding, StartupEntry, WatchScope } from "@/types/monitoring";
 
 /**
  * Every function here corresponds 1:1 to a #[tauri::command] in the
@@ -86,6 +87,31 @@ export function controlService(req: ServiceActionRequest): Promise<void> {
 
 export function changeServiceStartupType(req: ChangeStartupTypeRequest): Promise<void> {
   return wrapAppError(invoke("change_service_startup_type", { req }));
+}
+
+export function getWatchScopes(): Promise<WatchScope[]> {
+  return invoke("get_watch_scopes");
+}
+
+export function getRecentFileEvents(limit = 50): Promise<FileEvent[]> {
+  return invoke("get_recent_file_events", { limit });
+}
+
+export function listStartupEntries(): Promise<StartupEntry[]> {
+  return wrapAppError(invoke("list_startup_entries"));
+}
+
+/** Removes a startup persistence entry. Requires prior UI confirmation. */
+export function removeStartupEntry(id: string): Promise<void> {
+  return wrapAppError(invoke("remove_startup_entry", { id }));
+}
+
+export function runRiskAnalysis(): Promise<RiskFinding[]> {
+  return invoke("run_risk_analysis");
+}
+
+export function getRecentRiskFindings(limit = 20): Promise<RiskFinding[]> {
+  return invoke("get_recent_risk_findings", { limit });
 }
 
 export function onSystemMetrics(

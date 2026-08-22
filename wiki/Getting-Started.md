@@ -10,7 +10,7 @@
 ## Clone and run in dev mode
 
 ```powershell
-git clone https://github.com/behnooddev/web-voidguard.git
+git clone https://github.com/OWNER/voidguard.git
 cd voidguard
 npm install
 npm run tauri dev
@@ -32,10 +32,11 @@ Produces an MSI and NSIS installer under
 
 - The dashboard should immediately show live CPU/RAM/disk/process
   numbers, updating every couple of seconds.
-- **Processes**, **Network** (Adapters + Open Ports tabs), and
-  **Services** are fully functional. Everything else in the sidebar
-  may show a "not implemented yet" card — see the [[Roadmap]] for
-  what's built and what isn't yet.
+- **Processes**, **Network** (Adapters + Open Ports tabs),
+  **Services**, **Files**, **Startup**, and **Events** are fully
+  functional. Everything else in the sidebar may show a "not
+  implemented yet" card — see the [[Roadmap]] for what's built and
+  what isn't yet.
 - The database is created at `%APPDATA%/VoidGuard/voidguard.db`.
 
 ## Where things live

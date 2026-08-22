@@ -26,14 +26,18 @@ persistence capability of its own — see `SECURITY.md`.
 
 ## Status
 
-This repository currently implements **Phase 1** and **Phase 2** of the
-plan in `ARCHITECTURE.md`: app shell, dashboard, process manager, open
-port monitoring/control, network adapter view, and services manager
-are all functional. See `handoffs/` for the detailed, dated record of
-what shipped in each phase — including a debugging checklist for
-Phase 2's native Windows code, which has not yet been compiled on an
-actual Windows machine. Every other sidebar page is an explicit,
-labeled "not implemented yet" state — nothing in the UI is faked.
+This repository currently implements **Phase 1**, **Phase 2**, and
+most of **Phase 3** of the plan in `ARCHITECTURE.md`: app shell,
+dashboard, process manager, open port monitoring/control, network
+adapters, services manager, file integrity monitoring, startup/
+persistence monitoring, a filterable event timeline, and a starter
+risk-correlation engine are all functional. Scheduled Tasks (one of
+several startup-persistence vectors) isn't covered yet. See
+`handoffs/` for the detailed, dated record of what shipped in each
+phase — including a debugging checklist for the native Windows code,
+which has not yet been compiled on an actual Windows machine. Every
+other sidebar page is an explicit, labeled "not implemented yet"
+state — nothing in the UI is faked.
 
 ## Stack
 
@@ -80,4 +84,5 @@ src-tauri/
 
 See `ARCHITECTURE.md` for the module/data-flow breakdown and the
 phase-by-phase build plan, `SECURITY.md` for the privilege boundary,
-and `DEVELOPMENT.md` for day-to-day dev workflow and testing.
+`DEVELOPMENT.md` for day-to-day dev workflow and testing, and
+`RELEASING.md` for how tagged releases are auto-drafted and published.

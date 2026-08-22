@@ -2,8 +2,10 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 pub mod ports;
+pub mod monitoring;
 pub mod system_control;
 pub use ports::*;
+pub use monitoring::*;
 pub use system_control::*;
 
 /// Severity level shared across events, alerts, and detection rules.

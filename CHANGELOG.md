@@ -3,9 +3,25 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased] — Phase 3 not started
+## [Unreleased] — Phase 4 not started
 
-### Added (Phase 2 completion)
+### Added (Phase 3)
+- File integrity monitoring: live `notify`-based watcher over a
+  conservative default scope list, SHA-256 hashing, Files page.
+- Startup/persistence monitoring: Registry Run/RunOnce + Startup
+  folder enumeration with evidence-based classification, removal
+  action, Startup page. Scheduled Tasks not yet covered.
+- Event Center: full filterable event timeline (Events page).
+- Risk engine: two starter correlation rules producing evidence-based
+  findings, surfaced on the Events page, run on demand.
+- Automated release workflow (`.github/workflows/release.yml`):
+  generates categorized release notes from Conventional Commits,
+  builds Windows installers, and opens a **draft** GitHub release —
+  publishing is always a manual approval step. See `RELEASING.md`.
+
+## Phase 2 completion
+
+### Added
 - Network Adapters tab: full adapter list (IPv4/IPv6/gateway/DNS/MAC/
   DHCP/link speed) via native `GetAdaptersAddresses`.
 - Services Manager: list, start/stop/restart, and change startup type

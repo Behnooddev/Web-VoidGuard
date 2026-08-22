@@ -1,0 +1,114 @@
+name: Prepare Release
+
+# Never publishes on its own. This workflow always produces a DRAFT
+# GitHub release with generated notes and (if the build succeeds)
+# attached Windows installers. Publishing — the "→ approved" step —
+# is a manual click on the draft in the GitHub UI. See RELEASING.md.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (must already exist, e.g. v0.2.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  notes:
+    name: Generate release notes
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history — the notes generator walks tags/commits
+
+      - id: resolve
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate categorized notes from Conventional Commits
+        run: node .github/scripts/generate-release-notes.mjs "${{ steps.resolve.outputs.tag }}" > release-notes.md
+
+      - name: Show generated notes in the run log
+        run: cat release-notes.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-notes
+          path: release-notes.md
+          retention-days: 14
+
+  build-windows:
+    name: Build Windows installers
+    needs: notes
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.notes.outputs.tag }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - run: npm ci
+
+      # tauri-action builds the MSI/NSIS installers and creates (or
+      # reuses) a DRAFT GitHub release for this tag, uploading the
+      # installers to it. It does NOT publish — draft stays draft
+      # until a maintainer clicks "Publish release".
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ needs.notes.outputs.tag }}
+          releaseName: "VoidGuard ${{ needs.notes.outputs.tag }}"
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: false
+
+  finalize-notes:
+    name: Apply clean notes to the draft
+    needs: [notes, build-windows]
+    if: always() && needs.notes.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-notes
+
+      # Runs even if build-windows failed, so the draft still exists
+      # with clean notes and a maintainer can see what broke and
+      # attach installers manually later if needed.
+      - name: Ensure the draft release exists
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh release view "${{ needs.notes.outputs.tag }}" >/dev/null 2>&1; then
+            gh release create "${{ needs.notes.outputs.tag }}" --draft --notes-file release-notes.md --title "VoidGuard ${{ needs.notes.outputs.tag }}"
+          else
+            gh release edit "${{ needs.notes.outputs.tag }}" --notes-file release-notes.md
+          fi
+
+      - name: Summary
+        run: |
+          echo "### Draft release ready for review" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Tag: \`${{ needs.notes.outputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Nothing has been published. Open the **Releases** page, review/edit the draft, then click **Publish release** when ready." >> "$GITHUB_STEP_SUMMARY"

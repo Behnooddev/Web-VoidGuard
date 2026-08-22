@@ -5,6 +5,9 @@ import Dashboard from "@/pages/Dashboard";
 import ProcessesPage from "@/pages/ProcessesPage";
 import NetworkPage from "@/pages/NetworkPage";
 import ServicesPage from "@/pages/ServicesPage";
+import FilesPage from "@/pages/FilesPage";
+import StartupPage from "@/pages/StartupPage";
+import EventsPage from "@/pages/EventsPage";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 
 type Theme = "light" | "dark" | "system";
@@ -56,18 +59,9 @@ export default function App() {
             element={<PlaceholderPage title="Firewall" phase="Phase 4 (firewall management)" />}
           />
           <Route path="/services" element={<ServicesPage />} />
-          <Route
-            path="/files"
-            element={<PlaceholderPage title="Files" phase="Phase 3 (file integrity monitoring)" />}
-          />
-          <Route
-            path="/startup"
-            element={<PlaceholderPage title="Startup" phase="Phase 3 (startup & persistence monitoring)" />}
-          />
-          <Route
-            path="/events"
-            element={<PlaceholderPage title="Events" phase="Phase 3 (event engine, full event center UI)" />}
-          />
+          <Route path="/files" element={<FilesPage />} />
+          <Route path="/startup" element={<StartupPage />} />
+          <Route path="/events" element={<EventsPage />} />
           <Route
             path="/scans"
             element={<PlaceholderPage title="Scans" phase="Phase 5 (scanning system)" />}

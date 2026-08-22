@@ -11,16 +11,21 @@ use commands::process::{list_processes, terminate_process};
 use commands::ports::{close_port, list_listening_ports, open_port, terminate_port_owner};
 use commands::network::list_network_adapters;
 use commands::services::{change_service_startup_type, control_service, list_services};
+use commands::files::{get_recent_file_events, get_watch_scopes, init_and_start_watching, init_handle as init_file_watcher_handle, FileWatcherHandle};
+use commands::startup::{list_startup_entries, remove_startup_entry};
+use commands::risk::{get_recent_risk_findings, run_risk_analysis};
 use models::{EventCategory, Severity};
 use tauri::Manager;
 
 fn main() {
     let db = db::init().expect("failed to initialize database");
     let sys_handle = init_handle();
+    let file_watcher_handle = init_file_watcher_handle();
 
     tauri::Builder::default()
         .manage(db)
         .manage(sys_handle)
+        .manage(file_watcher_handle)
         .invoke_handler(tauri::generate_handler![
             get_system_metrics,
             get_recent_events,
@@ -35,6 +40,12 @@ fn main() {
             list_services,
             control_service,
             change_service_startup_type,
+            get_watch_scopes,
+            get_recent_file_events,
+            list_startup_entries,
+            remove_startup_entry,
+            run_risk_analysis,
+            get_recent_risk_findings,
         ])
         .setup(|app| {
             // Record app start as the first event of the session and
@@ -67,6 +78,19 @@ fn main() {
                     }
                 }
             });
+
+            // Start file integrity watching on the small, built-in
+            // set of security-sensitive locations (plus any
+            // user-configured scopes already in the DB). Errors here
+            // are non-fatal to app startup — logged as a low-severity
+            // event instead (see files::start_watcher).
+            {
+                let db_state = handle.state::<db::Db>();
+                let watcher_state = handle.state::<commands::files::FileWatcherHandle>();
+                if let Err(e) = commands::files::init_and_start_watching(&db_state, &watcher_state) {
+                    eprintln!("File watcher did not start: {}", e.message);
+                }
+            }
 
             Ok(())
         })

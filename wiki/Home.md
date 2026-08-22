@@ -24,9 +24,9 @@ correlation, risk scoring, and a full audit trail.
 
 ## Quick links
 
-- [README](https://github.com/behnooddev/web-voidguard.git/blob/main/README.md)
-- [Architecture doc](https://github.com/behnooddev/web-voidguard.git/blob/main/ARCHITECTURE.md)
-- [Security doc](https://github.com/behnooddev/web-voidguard.git/blob/main/SECURITY.md)
-- [Project site (GitHub Pages)](https://behnooddev.github.io/Web-VoidGuard/) — informational only, not a control panel
+- [README](https://github.com/OWNER/voidguard/blob/main/README.md)
+- [Architecture doc](https://github.com/OWNER/voidguard/blob/main/ARCHITECTURE.md)
+- [Security doc](https://github.com/OWNER/voidguard/blob/main/SECURITY.md)
+- [Project site (GitHub Pages)](https://OWNER.github.io/voidguard/) — informational only, not a control panel
 
 *(Replace `OWNER` with the actual GitHub username/org once the repo is created.)*

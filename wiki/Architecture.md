@@ -25,9 +25,9 @@ calls the Windows API, and writes an audit entry before returning.
 | Open port monitoring + terminate/open/close | ✅ Done (Windows-native, unverified compile — see [[Port-Control]]) |
 | Network adapter enumeration | ✅ Done (Windows-native, unverified compile) |
 | Services manager | ✅ Done (Windows-native, unverified compile) |
-| File integrity monitoring | ⏳ Not started |
-| Startup/persistence monitoring | ⏳ Not started |
-| Event correlation / risk engine | ⏳ Not started |
+| File integrity monitoring | ✅ Done (Windows-native, unverified compile) |
+| Startup/persistence monitoring | ✅ Mostly done — Scheduled Tasks not covered (Windows-native, unverified compile) |
+| Event correlation / risk engine | ✅ Done — 2 starter rules |
 | Full firewall rule management | ⏳ Not started (port-level open/close only so far) |
 | DNS management | ⏳ Not started |
 | Scanning system | ⏳ Not started |
