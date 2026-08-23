@@ -93,8 +93,8 @@ fn main() {
             // event instead (see files::start_watcher).
             {
                 let db_state = handle.state::<db::Db>();
-                let watcher_state = handle.state::<commands::files::FileWatcherHandle>();
-                if let Err(e) = commands::files::init_and_start_watching(&db_state, &watcher_state) {
+                let watcher_state = handle.state::<FileWatcherHandle>();
+                if let Err(e) = init_and_start_watching(&db_state, &watcher_state) {
                     eprintln!("File watcher did not start: {}", e.message);
                 }
             }

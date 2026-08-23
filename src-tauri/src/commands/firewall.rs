@@ -269,7 +269,8 @@ fn db_error<E: std::fmt::Display>(e: E) -> AppError {
 #[cfg(windows)]
 mod windows_impl {
     use super::*;
-    use windows::core::HSTRING;
+    use windows::core::BSTR;
+    use windows::Win32::Foundation::VARIANT_BOOL;
     use windows::Win32::NetworkManagement::WindowsFirewall::{
         INetFwPolicy2, INetFwRule, NetFwPolicy2, NetFwRule, NET_FW_ACTION_ALLOW,
         NET_FW_ACTION_BLOCK, NET_FW_PROFILE2_ALL, NET_FW_RULE_DIR_IN, NET_FW_RULE_DIR_OUT,
@@ -298,10 +299,10 @@ mod windows_impl {
             let rule: INetFwRule = CoCreateInstance(&NetFwRule, None, CLSCTX_INPROC_SERVER)
                 .map_err(|e| com_error("Could not create a firewall rule object.", e))?;
 
-            rule.SetName(&HSTRING::from(req.name.as_str()))
+            rule.SetName(&BSTR::from(req.name.as_str()))
                 .map_err(|e| com_error("Could not name the firewall rule.", e))?;
             if let Some(desc) = &req.description {
-                rule.SetDescription(&HSTRING::from(desc.as_str())).ok();
+                rule.SetDescription(&BSTR::from(desc.as_str())).ok();
             }
             rule.SetProtocol(match req.protocol {
                 FirewallProtocol::Tcp => 6,  // IPPROTO_TCP
@@ -312,25 +313,25 @@ mod windows_impl {
 
             if let Some(local) = &req.local_ports {
                 if !local.is_empty() {
-                    rule.SetLocalPorts(&HSTRING::from(local.as_str()))
+                    rule.SetLocalPorts(&BSTR::from(local.as_str()))
                         .map_err(|e| com_error("Could not set local ports.", e))?;
                 }
             }
             if let Some(remote_ports) = &req.remote_ports {
                 if !remote_ports.is_empty() {
-                    rule.SetRemotePorts(&HSTRING::from(remote_ports.as_str()))
+                    rule.SetRemotePorts(&BSTR::from(remote_ports.as_str()))
                         .map_err(|e| com_error("Could not set remote ports.", e))?;
                 }
             }
             if let Some(remote_addr) = &req.remote_addresses {
                 if !remote_addr.is_empty() {
-                    rule.SetRemoteAddresses(&HSTRING::from(remote_addr.as_str()))
+                    rule.SetRemoteAddresses(&BSTR::from(remote_addr.as_str()))
                         .map_err(|e| com_error("Could not set remote addresses.", e))?;
                 }
             }
             if let Some(app) = &req.application_path {
                 if !app.is_empty() {
-                    rule.SetApplicationName(&HSTRING::from(app.as_str()))
+                    rule.SetApplicationName(&BSTR::from(app.as_str()))
                         .map_err(|e| com_error("Could not scope the rule to an application.", e))?;
                 }
             }
@@ -345,7 +346,7 @@ mod windows_impl {
                 FirewallAction::Block => NET_FW_ACTION_BLOCK,
             })
             .map_err(|e| com_error("Could not set the rule action.", e))?;
-            rule.SetEnabled(req.enabled)
+            rule.SetEnabled(VARIANT_BOOL::from(req.enabled))
                 .map_err(|e| com_error("Could not set the rule's enabled state.", e))?;
             rule.SetProfiles(NET_FW_PROFILE2_ALL.0)
                 .map_err(|e| com_error("Could not set the rule profile scope.", e))?;
@@ -368,9 +369,9 @@ mod windows_impl {
                 .Rules()
                 .map_err(|e| com_error("Could not read firewall rules.", e))?;
             let rule = rules
-                .Item(&HSTRING::from(name))
+                .Item(&BSTR::from(name))
                 .map_err(|e| com_error("Could not find that firewall rule.", e))?;
-            rule.SetEnabled(enabled)
+            rule.SetEnabled(VARIANT_BOOL::from(enabled))
                 .map_err(|e| com_error("Could not change the rule's enabled state.", e))?;
             Ok(())
         }
@@ -383,7 +384,7 @@ mod windows_impl {
                 .Rules()
                 .map_err(|e| com_error("Could not read firewall rules.", e))?;
             rules
-                .Remove(&HSTRING::from(name))
+                .Remove(&BSTR::from(name))
                 .map_err(|e| com_error("Could not remove that firewall rule.", e))?;
             Ok(())
         }

@@ -7,7 +7,6 @@ use crate::models::{
 };
 use chrono::Utc;
 use rusqlite::params;
-use uuid::Uuid;
 
 #[tauri::command]
 pub fn list_startup_entries(db: tauri::State<Db>) -> Result<Vec<StartupEntry>, AppError> {

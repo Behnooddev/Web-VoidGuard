@@ -135,8 +135,9 @@ fn audit_port_rule(db: &Db, action: &str, req: &PortRuleRequest, result: &Result
 mod windows_impl {
     use super::*;
     use std::mem::size_of;
-    use windows::core::{HSTRING, PWSTR};
-    use windows::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, NO_ERROR};
+    use windows::core::{BSTR, PWSTR};
+    use windows::Win32::Foundation::VARIANT_BOOL;
+    use windows::Win32::Foundation::NO_ERROR;
     use windows::Win32::NetworkManagement::IpHelper::{
         GetExtendedTcpTable, GetExtendedUdpTable, MIB_TCPROW_OWNER_PID, MIB_TCPTABLE_OWNER_PID,
         MIB_UDPROW_OWNER_PID, MIB_UDPTABLE_OWNER_PID, TCP_TABLE_OWNER_PID_ALL,
@@ -352,16 +353,16 @@ mod windows_impl {
                 let rules = policy
                     .Rules()
                     .map_err(|e| com_error("Could not read firewall rules.", e))?;
-                let _ = rules.Remove(&HSTRING::from(rule_name.as_str()));
+                let _ = rules.Remove(&BSTR::from(rule_name.as_str()));
                 return Ok(());
             }
 
             let rule: INetFwRule = CoCreateInstance(&NetFwRule, None, CLSCTX_INPROC_SERVER)
                 .map_err(|e| com_error("Could not create a firewall rule object.", e))?;
 
-            rule.SetName(&HSTRING::from(rule_name.as_str()))
+            rule.SetName(&BSTR::from(rule_name.as_str()))
                 .map_err(|e| com_error("Could not name the firewall rule.", e))?;
-            rule.SetDescription(&HSTRING::from(
+            rule.SetDescription(&BSTR::from(
                 "Created by VoidGuard's port control panel.",
             ))
             .ok();
@@ -370,7 +371,7 @@ mod windows_impl {
                 PortProtocol::Udp => 17, // IPPROTO_UDP
             })
             .map_err(|e| com_error("Could not set the rule protocol.", e))?;
-            rule.SetLocalPorts(&HSTRING::from(req.port.to_string().as_str()))
+            rule.SetLocalPorts(&BSTR::from(req.port.to_string().as_str()))
                 .map_err(|e| com_error("Could not set the rule port.", e))?;
             rule.SetDirection(match req.direction {
                 PortDirection::Inbound => NET_FW_RULE_DIR_IN,
@@ -379,7 +380,7 @@ mod windows_impl {
             .map_err(|e| com_error("Could not set the rule direction.", e))?;
             rule.SetAction(NET_FW_ACTION_ALLOW)
                 .map_err(|e| com_error("Could not set the rule action.", e))?;
-            rule.SetEnabled(true)
+            rule.SetEnabled(VARIANT_BOOL::from(true))
                 .map_err(|e| com_error("Could not enable the rule.", e))?;
             rule.SetProfiles(NET_FW_PROFILE2_ALL.0)
                 .map_err(|e| com_error("Could not set the rule profile scope.", e))?;
