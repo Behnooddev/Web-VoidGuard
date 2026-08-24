@@ -2,7 +2,7 @@
 name = "voidguard"
 version = "0.1.0"
 description = "VoidGuard - Local Windows Security & System Monitoring"
-authors = ["you"]
+authors = ["Behnooddev"]
 edition = "2021"
 
 [build-dependencies]
@@ -39,6 +39,7 @@ windows = { version = "0.54", features = [
     "Win32_System_Com",
     "Win32_NetworkManagement_WindowsFirewall",
     "Win32_Networking_WinSock",
+    "Win32_System_TaskScheduler",
 ] }
 
 [features]

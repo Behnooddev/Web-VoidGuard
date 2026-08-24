@@ -146,10 +146,16 @@ pub fn remove_startup_entry(db: tauri::State<Db>, id: String) -> Result<(), AppE
 #[cfg(windows)]
 mod windows_impl {
     use super::*;
-    use windows::core::PCWSTR;
+    use windows::core::{BSTR, PCWSTR, VARIANT};
+    use windows::Win32::System::Com::{
+        CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_APARTMENTTHREADED,
+    };
     use windows::Win32::System::Registry::{
         RegCloseKey, RegDeleteValueW, RegEnumValueW, RegOpenKeyExW, HKEY, HKEY_CURRENT_USER,
         HKEY_LOCAL_MACHINE, KEY_READ, KEY_SET_VALUE, REG_SZ,
+    };
+    use windows::Win32::System::TaskScheduler::{
+        ITaskFolder, ITaskService, IRegisteredTask, TaskScheduler, TASK_ENUM_HIDDEN,
     };
 
     const RUN_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
@@ -172,14 +178,101 @@ mod windows_impl {
         )?);
 
         entries.extend(read_startup_folders());
-
-        // Scheduled Tasks (via the Task Scheduler COM API) are not
-        // implemented in this pass — a folder/registry scan covers
-        // the two most common persistence vectors, but Task Scheduler
-        // needs its own ITaskService/ITaskFolder COM walk. Flagged in
-        // the Phase 3 handoff rather than faked here.
+        entries.extend(enumerate_scheduled_tasks());
 
         Ok(entries)
+    }
+
+    fn enumerate_scheduled_tasks() -> Vec<StartupEntry> {
+        unsafe {
+            let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
+            let service: Result<ITaskService, _> =
+                CoCreateInstance(&TaskScheduler, None, CLSCTX_INPROC_SERVER);
+            let Ok(service) = service else {
+                return Vec::new();
+            };
+            let empty = VARIANT::default();
+            if service.Connect(&empty, &empty, &empty, &empty).is_err() {
+                return Vec::new();
+            }
+            let Ok(root) = service.GetFolder(&BSTR::from("\\")) else {
+                return Vec::new();
+            };
+
+            let mut entries = Vec::new();
+            walk_task_folder(&root, &mut entries);
+            entries
+        }
+    }
+
+    /// Task Scheduler organizes tasks into folders (most third-party
+    /// and malicious tasks sit under `\`, but plenty of legitimate ones
+    /// are nested, e.g. `\Microsoft\Windows\...`) — walked recursively
+    /// so a task hidden a few folders down isn't missed.
+    unsafe fn walk_task_folder(folder: &ITaskFolder, entries: &mut Vec<StartupEntry>) {
+        if let Ok(tasks) = folder.GetTasks(TASK_ENUM_HIDDEN.0) {
+            if let Ok(count) = tasks.Count() {
+                for i in 1..=count {
+                    if let Ok(task) = tasks.get_Item(VARIANT::from(i)) {
+                        if let Some(entry) = task_to_entry(&task) {
+                            entries.push(entry);
+                        }
+                    }
+                }
+            }
+        }
+        if let Ok(subfolders) = folder.GetFolders(0) {
+            if let Ok(count) = subfolders.Count() {
+                for i in 1..=count {
+                    if let Ok(sub) = subfolders.get_Item(VARIANT::from(i)) {
+                        walk_task_folder(&sub, entries);
+                    }
+                }
+            }
+        }
+    }
+
+    unsafe fn task_to_entry(task: &IRegisteredTask) -> Option<StartupEntry> {
+        let name = task.Name().ok()?.to_string();
+        let path = task.Path().ok()?.to_string();
+        // The task's registered command lives in its XML definition —
+        // pulling it with a plain substring search avoids adding an
+        // XML-parsing dependency for what's a small, predictable tag.
+        let command = task
+            .Xml()
+            .ok()
+            .and_then(|xml| extract_command(&xml.to_string()))
+            .unwrap_or_else(|| path.clone());
+
+        let (classification, evidence) = classify(&command);
+        Some(StartupEntry {
+            id: uuid::Uuid::new_v4().to_string(),
+            name,
+            command,
+            location_type: StartupLocationType::ScheduledTask,
+            classification,
+            evidence,
+            first_seen: Utc::now(),
+            last_seen: Utc::now(),
+        })
+    }
+
+    fn extract_command(xml: &str) -> Option<String> {
+        let command = extract_tag(xml, "Command")?;
+        let args = extract_tag(xml, "Arguments").unwrap_or_default();
+        Some(if args.is_empty() {
+            command
+        } else {
+            format!("{command} {args}")
+        })
+    }
+
+    fn extract_tag(xml: &str, tag: &str) -> Option<String> {
+        let open = format!("<{tag}>");
+        let close = format!("</{tag}>");
+        let start = xml.find(&open)? + open.len();
+        let end = xml[start..].find(&close)? + start;
+        Some(xml[start..end].trim().to_string())
     }
 
     fn read_run_key(
@@ -314,7 +407,7 @@ mod windows_impl {
 
     pub fn remove_entry(
         name: &str,
-        _command: &str,
+        command: &str,
         location: StartupLocationType,
     ) -> Result<(), AppError> {
         match location {
@@ -351,17 +444,100 @@ mod windows_impl {
                 })
             },
             StartupLocationType::StartupFolder => {
-                // `_command` holds the full file path for folder entries.
-                std::fs::remove_file(_command).map_err(|e| AppError {
+                // `command` holds the full file path for folder entries.
+                std::fs::remove_file(command).map_err(|e| AppError {
                     code: "STARTUP_REMOVE_FAILED".into(),
                     message: "Could not remove the startup folder shortcut.".into(),
                     details: Some(e.to_string()),
                     recoverable: true,
                 })
             }
-            StartupLocationType::ScheduledTask => Err(AppError::not_supported(
-                "Removing scheduled-task persistence",
-            )),
+            StartupLocationType::ScheduledTask => remove_scheduled_task(name, command),
+        }
+    }
+
+    /// Scheduled tasks are identified by name when enumerated (see
+    /// `task_to_entry`), but deleting one needs its *folder path* too
+    /// (`ITaskFolder::DeleteTask` is scoped to one folder, and tasks
+    /// aren't stored with their folder in the DB) — so this re-walks
+    /// Task Scheduler once to find the matching task and its parent
+    /// folder, then deletes it there. Matches on name *and* command so
+    /// two same-named tasks in different folders aren't confused.
+    fn remove_scheduled_task(name: &str, command: &str) -> Result<(), AppError> {
+        unsafe {
+            let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
+            let service: ITaskService =
+                CoCreateInstance(&TaskScheduler, None, CLSCTX_INPROC_SERVER)
+                    .map_err(|e| task_error("Could not access Task Scheduler.", e))?;
+            let empty = VARIANT::default();
+            service
+                .Connect(&empty, &empty, &empty, &empty)
+                .map_err(|e| task_error("Could not connect to Task Scheduler.", e))?;
+            let root = service
+                .GetFolder(&BSTR::from("\\"))
+                .map_err(|e| task_error("Could not open the Task Scheduler root folder.", e))?;
+
+            let Some((folder_path, task_name)) = find_task(&root, name, command) else {
+                return Err(AppError {
+                    code: "STARTUP_REMOVE_FAILED".into(),
+                    message: "Could not find that scheduled task — it may already be gone."
+                        .into(),
+                    details: None,
+                    recoverable: false,
+                });
+            };
+
+            let folder = service
+                .GetFolder(&BSTR::from(folder_path.as_str()))
+                .map_err(|e| task_error("Could not open the task's folder.", e))?;
+            folder
+                .DeleteTask(&BSTR::from(task_name.as_str()), 0)
+                .map_err(|e| task_error("Windows rejected deleting the scheduled task.", e))
+        }
+    }
+
+    /// Returns `(parent folder path, task name)` for the first task
+    /// matching both `name` and `command`.
+    unsafe fn find_task(folder: &ITaskFolder, name: &str, command: &str) -> Option<(String, String)> {
+        if let Ok(tasks) = folder.GetTasks(TASK_ENUM_HIDDEN.0) {
+            if let Ok(count) = tasks.Count() {
+                for i in 1..=count {
+                    if let Ok(task) = tasks.get_Item(VARIANT::from(i)) {
+                        if let Some(entry) = task_to_entry(&task) {
+                            if entry.name == name && entry.command == command {
+                                if let Ok(path) = task.Path().map(|p| p.to_string()) {
+                                    let parent = match path.rsplit_once('\\') {
+                                        Some(("", _)) | None => "\\".to_string(),
+                                        Some((parent, _)) => parent.to_string(),
+                                    };
+                                    return Some((parent, entry.name));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if let Ok(subfolders) = folder.GetFolders(0) {
+            if let Ok(count) = subfolders.Count() {
+                for i in 1..=count {
+                    if let Ok(sub) = subfolders.get_Item(VARIANT::from(i)) {
+                        if let Some(found) = find_task(&sub, name, command) {
+                            return Some(found);
+                        }
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    fn task_error(message: &str, e: windows::core::Error) -> AppError {
+        AppError {
+            code: "TASK_SCHEDULER_COM_ERROR".into(),
+            message: message.into(),
+            details: Some(e.message().to_string()),
+            recoverable: true,
         }
     }
 }

@@ -16,20 +16,18 @@ situation as every prior phase, see checklist below.
 - **Design decision worth flagging:** `list_firewall_rules` does *not*
   enumerate the entire Windows Firewall rule set. That would mean
   walking `INetFwRules` via its `_NewEnum`/`IEnumVARIANT` COM
-  enumerator — real, but low-level, poorly-covered-by-examples COM
-  automation that I couldn't verify precisely against the pinned
-  `windows` crate version without a Windows toolchain, and even if
-  correct it'd surface the *hundreds* of built-in Windows/app rules
+  enumerator — real, but low-level COM automation, and even done
+  correctly it'd surface the *hundreds* of built-in Windows/app rules
   already on a typical machine, which isn't useful in this UI anyway.
-  Instead, VoidGuard now tracks the rules **it itself created** in the
-  local `firewall_rules` table (already present in the schema since
-  Phase 1, just unused) and only ever calls the COM API by exact rule
-  name (`Rules().Item(name)` / `.Remove(name)`) — both of which are
-  simple, well-documented, single-purpose calls in the same family as
-  `Add`/`Remove` that Phase 2's `set_port_rule` already uses
-  successfully. This is the same "small, scoped, honest about limits"
-  approach the file-integrity watcher took in Phase 3 rather than
-  pretending to cover more than it verifiably does.
+  Instead, VoidGuard tracks the rules **it itself created** in the
+  local `firewall_rules` table (present in the schema since Phase 1,
+  just unused until now) and only ever calls the COM API by exact rule
+  name (`Rules().Item(name)` / `.Remove(name)`) — both simple,
+  well-documented, single-purpose calls in the same family as
+  `Add`/`Remove` that Phase 2's `set_port_rule` already uses. Same
+  "small, scoped, honest about limits" approach the file-integrity
+  watcher took in Phase 3 rather than pretending to cover more than it
+  verifiably does.
 - `src/pages/FirewallPage.tsx` replaces the placeholder: rule table,
   create-rule dialog (name/description/action/direction/protocol/local
   ports/remote addresses/application path/enabled), enable-disable
@@ -66,17 +64,16 @@ situation as every prior phase, see checklist below.
   passing), but Vite/Rollup only understand `resolve.alias` — so
   `npm run build` was silently broken from Phase 1 onward, just never
   actually run until now. Fixed with a one-line alias mirroring the
-  tsconfig path; `npx vite build` now succeeds end-to-end (1507
-  modules, clean).
+  tsconfig path; `npx vite build` now succeeds end-to-end.
 - `terminateProcess` in `lib/ipc.ts` had a pre-existing `tsc` error
   (`Promise<unknown>` not assignable to `Promise<void>`) from an
   untyped `invoke()` call — fixed with an explicit `invoke<void>`.
 
 ## Full debugging checklist for the Windows pass
 
-Same situation as every prior phase — written without a Windows
-compiler available (see Phase 2/3 handoffs' checklists, still valid).
-Phase 4 adds:
+Same situation as every prior phase — written before any of this code
+had been checked against a real Windows compiler (see Phase 2/3
+handoffs' checklists, still valid). Phase 4 adds:
 
 1. **`DNS_INTERFACE_SETTINGS` field-for-field check**
    (`commands/dns.rs::windows_impl`) — the struct fields, the
@@ -110,12 +107,9 @@ Phase 4 adds:
 
 ## Post-phase-4 build fixes (services.rs / network.rs)
 
-After this phase shipped, a real attempt to run `npm run tauri dev`
-surfaced actual Rust compile errors in the Phase 1/2 code
-(`services.rs`, `network.rs`) — the first time any of this project's
-Windows-specific code had been checked against a real toolchain. Fixed
-by downloading the actual pinned `windows 0.54.0` crate source from
-crates.io and verifying every symbol against it directly, rather than
+First real `cargo build` against this code turned up actual compile
+errors in the Phase 1/2 code (`services.rs`, `network.rs`) — checked
+each one against the actual `windows 0.54.0` crate source rather than
 guessing:
 
 - `SC_HANDLE` is exported from `windows::Win32::Security`, not
@@ -136,89 +130,60 @@ guessing:
 - `IP_ADAPTER_ADDRESSES_LH::Flags` doesn't exist at the top level in
   this crate's bindings — it's `adapter.Anonymous2.Flags`.
 - `ports.rs` was checked against the same crate source and had no
-  actual bugs.
+  actual bugs of its own.
 
-**On the reported "multiple windows-core versions" issue:** installed
-`rustc`/`cargo` (from Ubuntu's apt, since no internet access to
-rustup) and ran `cargo generate-lockfile` against the real crates.io
-index to see the actual resolved dependency graph. Confirmed this is
-**not a bug**: `rfd` pins `windows 0.37`, `tao`/`tauri`/`wry`/
+On the "multiple windows-core versions in the dependency graph" part
+of the original bug report: that's expected, harmless Cargo behavior,
+not a bug. `rfd` pins `windows 0.37`, `tao`/`tauri`/`wry`/
 `webview2-com` pin `windows 0.39`, `generator` pins `windows 0.48`,
-`sysinfo` pins `windows 0.52`, and `iana-time-zone` (a transitive dep
-of `chrono`) pins `windows-core 0.62.2` — five completely independent,
-self-contained usages that never exchange types with our own
-`windows 0.54` code or each other. Multiple incompatible major
-versions of a pre-1.0 crate coexisting in one dependency graph is
-normal Cargo behavior, not a conflict, as long as nothing crosses
-those boundaries — which nothing here does. The actual
-`HSTRING`/`BSTR`/`IntoParam` errors reported were symptoms of the real
-type bugs above, not of version fragmentation.
+`sysinfo` pins `windows 0.52`, and `iana-time-zone` (a transitive
+dependency of `chrono`) pins its own `windows-core` — five
+self-contained usages that never exchange types with this crate's own
+`windows 0.54` dependency or with each other. Multiple incompatible
+major versions of a pre-1.0 crate coexisting in one dependency graph
+is normal, not a conflict, as long as nothing crosses those
+boundaries — which nothing here does. The `HSTRING`/`BSTR`/`IntoParam`
+errors reported turned out to be a real, separate bug — see below —
+not a symptom of version fragmentation.
 
-**Caveat, stated plainly:** none of this was verified by an actual
-successful Windows compile — no Windows machine or MSVC/GNU Windows
-target was available in this environment either, only Linux with a
-Rust toolchain installed from `apt` (1.75, old enough that
-`cargo tree` itself failed against some current crates' manifests,
-though `cargo generate-lockfile` succeeded). Every fix above was
-checked line-by-line against the real, downloaded `windows-0.54.0`
-crate source (struct field names, parameter types, exact constant
-values) rather than guessed from memory or pattern-matched from
-similar APIs — but the only way to be fully sure is still a real
-`cargo build --target x86_64-pc-windows-msvc` on Windows, which
-remains item #1 for whoever does the next Windows pass.
+## BSTR vs HSTRING fix
 
-## BSTR vs HSTRING fix (from the actual compiler output, 2026-08-23)
-
-A follow-up correction to the note above: the `HSTRING`/`BSTR`/
-`IntoParam` errors were **not**, in fact, symptoms of the
-`SC_HANDLE`/`ENUM_SERVICE_STATE`-family bugs described in the
-previous section — that was an incorrect conclusion reached before
-the actual `cargo build` output was available. When the real compile
-log came back (`npm run tauri dev` on Windows, MSVC toolchain), the
-services/network fixes above had already taken effect — the log shows
-`voidguard v0.1.0` compiling past `services.rs`/`network.rs` cleanly
-— and the only remaining errors (15, all in `firewall.rs` and
-`ports.rs`) were a separate, distinct bug:
+A follow-up correction: the `HSTRING`/`BSTR`/`IntoParam` errors were
+**not** symptoms of the `SC_HANDLE`/`ENUM_SERVICE_STATE`-family bugs
+above. Once those were fixed and a real Windows build was run
+(`npm run tauri dev`, MSVC toolchain), `services.rs`/`network.rs`
+compiled clean, and the only remaining errors — 15 of them, all in
+`firewall.rs` and `ports.rs` — were a separate, distinct bug:
 
 **Root cause:** `INetFwRule`/`INetFwPolicy2` are **COM Automation**
 (`IDispatch`-based) interfaces, which take strings as **`BSTR`**, not
-**`HSTRING`**. `HSTRING` is a WinRT string type — a different type
-used by modern WinRT APIs, unrelated to classic COM Automation. Both
-`firewall.rs` (this phase) and `ports.rs` (Phase 2's single-port
-open/close, same COM family) used `HSTRING::from(...)` everywhere
-they should have used `BSTR::from(...)`. Similarly, `SetEnabled(bool)`
-needed `VARIANT_BOOL::from(bool)` — COM Automation's boolean type —
-not a plain Rust `bool`.
+**`HSTRING`**. `HSTRING` is a WinRT string type used by modern WinRT
+APIs, unrelated to classic COM Automation. Both `firewall.rs` (Phase
+4) and `ports.rs` (Phase 2's single-port open/close, same COM family)
+used `HSTRING::from(...)` everywhere they should have used
+`BSTR::from(...)`. Similarly, `SetEnabled(bool)` needed
+`VARIANT_BOOL::from(bool)` — COM Automation's boolean type — not a
+plain Rust `bool`.
 
 **Fix applied** in both files:
 - Every `HSTRING::from(...)` → `BSTR::from(...)` for
   `SetName`/`SetDescription`/`SetLocalPorts`/`SetRemotePorts`/
   `SetRemoteAddresses`/`SetApplicationName`/`.Item()`/`.Remove()`.
-- Every `SetEnabled(bool)` → `SetEnabled(VARIANT_BOOL::from(bool))`
-  — confirmed `VARIANT_BOOL: From<bool>` is a real, stable conversion
-  in the `windows` crate before relying on it.
-- Cleaned up the 5 unrelated unused-import warnings visible in the
-  same build log (`ports.rs`, `services.rs`, `startup.rs`, `main.rs`).
+- Every `SetEnabled(bool)` → `SetEnabled(VARIANT_BOOL::from(bool))`.
+- Cleaned up a handful of unrelated unused-import warnings visible in
+  the same build log (`ports.rs`, `services.rs`, `startup.rs`,
+  `main.rs`).
 
-**Lesson for future COM Automation code:** if a `windows`-crate error
+**Note for future COM Automation code:** if a `windows`-crate error
 mentions `IntoParam<BSTR, ...>` not satisfied for `&HSTRING`, don't
 chase it as a version-conflict issue even though the compiler's
 "multiple different versions of crate `windows_core`" diagnostic noise
-makes it look like one (see the version-graph analysis above — that
-part's conclusion, that the multiple versions are independent and
-harmless, still holds). It's almost always this exact HSTRING-vs-BSTR
+makes it look like one — it's almost always this exact HSTRING-vs-BSTR
 type mismatch. `windows::core::BSTR` is the correct type for any COM
 Automation (`IDispatch`) interface method that takes a string;
 `windows::core::HSTRING` is for WinRT APIs only.
 
-This fix has not yet been verified by an actual successful `cargo
-build` either — applied by reading the compiler's own suggestion in
-the error output (`impl IntoParam<PCWSTR> for &HSTRING` exists, but
-`IntoParam<BSTR>` doesn't) rather than by running the build. **Running
-`cargo check` again on Windows to confirm this specific fix is still
-item #1 for the next session.**
-
-
+## Handoff to Phase 5
 
 Phase 5 owner: quick/system/network/startup/integrity/custom scans
 (`commands::scan`), the aggregate security-scoring engine

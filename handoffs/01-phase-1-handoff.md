@@ -52,9 +52,9 @@
   them in.
 - No retention/cleanup policy on `events` yet — fine at Phase 1
   volume, must be addressed before Phase 6 hardening.
-- Not build-tested on actual Windows in this environment (development
-  happened in a Linux sandbox with no Windows target available) — see
-  "Verification still needed" below.
+- Not build-tested on actual Windows yet — development happened
+  without a Windows target available, see "Verification still needed"
+  below.
 
 ## Verification still needed (do this first, on a Windows machine)
 

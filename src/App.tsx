@@ -8,13 +8,13 @@ import ServicesPage from "@/pages/ServicesPage";
 import FilesPage from "@/pages/FilesPage";
 import StartupPage from "@/pages/StartupPage";
 import EventsPage from "@/pages/EventsPage";
+import AuditPage from "@/pages/AuditPage";
 import FirewallPage from "@/pages/FirewallPage";
 import SecurityPage from "@/pages/SecurityPage";
 import ScansPage from "@/pages/ScansPage";
 import HealthPage from "@/pages/HealthPage";
 import SettingsPage from "@/pages/SettingsPage";
 import NotificationManager from "@/components/NotificationManager";
-import PlaceholderPage from "@/pages/PlaceholderPage";
 
 type Theme = "light" | "dark" | "system";
 
@@ -65,10 +65,7 @@ export default function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/scans" element={<ScansPage />} />
           <Route path="/health" element={<HealthPage />} />
-          <Route
-            path="/audit"
-            element={<PlaceholderPage title="Audit Log" phase="Phase 4 (audit system UI — backend + DB already live)" />}
-          />
+          <Route path="/audit" element={<AuditPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>

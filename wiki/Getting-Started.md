@@ -10,7 +10,7 @@
 ## Clone and run in dev mode
 
 ```powershell
-git clone https://github.com/OWNER/voidguard.git
+git clone https://github.com/Behnooddev/Web-VoidGuard.git
 cd voidguard
 npm install
 npm run tauri dev

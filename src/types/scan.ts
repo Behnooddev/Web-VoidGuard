@@ -42,6 +42,18 @@ export interface NotificationSettings {
   min_severity: "INFO" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 }
 
+export interface RetentionSettings {
+  events_days: number;
+  process_snapshots_days: number;
+  port_snapshots_days: number;
+}
+
+export interface RetentionCleanupResult {
+  events_deleted: number;
+  process_snapshots_deleted: number;
+  port_snapshots_deleted: number;
+}
+
 export const CUSTOM_SCAN_STEP_OPTIONS: { key: string; label: string }[] = [
   { key: "ports", label: "Open ports" },
   { key: "firewall", label: "Firewall rules" },

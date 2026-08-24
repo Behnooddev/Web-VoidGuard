@@ -3,7 +3,18 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased] — Phase 6 not started
+## [Unreleased]
+
+### Added (Phase 6)
+- Scheduled Tasks now covered by startup/persistence monitoring
+  (recursive Task Scheduler walk, hidden tasks included, removal
+  supported).
+- Audit Log page (backend/DB existed since Phase 1; this was the UI).
+- Configurable data retention for `events`/`process_snapshots`/
+  `port_snapshots`, with automatic cleanup on launch and a manual
+  "Clean up now" in Settings.
+- See `handoffs/06-phase-6-handoff.md` for the full writeup and what's
+  still open (testing, packaging, a full Windows build).
 
 ### Added (Phase 5)
 - Scanning system: Quick/System/Network/Startup/Integrity/Custom scans,

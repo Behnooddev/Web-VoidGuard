@@ -15,32 +15,29 @@ persistence capability of its own — see `SECURITY.md`.
 - `handoffs/` — one document per completed/in-progress phase: what
   shipped, what's left, and what needs verifying next
 - `wiki/` — source markdown for the GitHub Wiki (copy into the Wiki
-  tab, or clone `<repo>.wiki.git` and drop these in)
-- `docs/` — the informational GitHub Pages site (`OWNER.github.io/voidguard/`).
+  tab, or clone `Web-VoidGuard.wiki.git` and drop these in)
+- `docs/` — the informational GitHub Pages site (`Behnooddev.github.io/Web-VoidGuard/`).
   **Documentation only** — it has no connection to and cannot control
   any device, including the one running VoidGuard
 - `.github/` — issue templates, PR template, CI workflow, Pages deploy workflow
 
-> Replace `OWNER` in `docs/index.html`, `wiki/*.md`, and this README
-> with the actual GitHub username/org once the repo is created.
-
 ## Status
 
-This repository implements **Phases 1 through 5** of the plan in
+This repository implements **Phases 1 through 6** of the plan in
 `ARCHITECTURE.md`: app shell, dashboard, process manager, open port
 monitoring/control, network adapters, services manager, file
-integrity monitoring, startup/persistence monitoring, a filterable
-event timeline, a starter risk-correlation engine, full firewall rule
-management, per-interface DNS, a real scanning system, an explained
-security score, and configurable desktop notifications are all
-functional. Scheduled Tasks (one of several startup-persistence
-vectors) and the Audit Log page aren't covered yet. See `handoffs/`
-for the detailed, dated record of what shipped in each phase —
-including a real Windows compile pass in Phase 4 that found and fixed
-an actual bug (see `handoffs/04-phase-4-handoff.md`), and debugging
-checklists for what's still unverified in later phases. Every
-remaining sidebar page is an explicit, labeled "not implemented yet"
-state — nothing in the UI is faked.
+integrity monitoring, startup/persistence monitoring (including
+Scheduled Tasks), a filterable event timeline, an audit log, a
+starter risk-correlation engine, full firewall rule management,
+per-interface DNS, a real scanning system, an explained security
+score, configurable desktop notifications, and configurable data
+retention are all functional. See `handoffs/` for the detailed,
+dated record of what shipped in each phase — including a real
+Windows compile pass in Phase 4 that found and fixed an actual bug
+(see `handoffs/04-phase-4-handoff.md`), and debugging checklists for
+what's still unverified in later phases. Automated tests and a
+Windows packaging review are still open (see
+`handoffs/06-phase-6-handoff.md`).
 
 ## Stack
 

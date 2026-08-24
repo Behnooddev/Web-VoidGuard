@@ -78,3 +78,25 @@ impl Default for NotificationSettings {
         }
     }
 }
+
+/// User-configurable retention window (in days) for the high-volume
+/// tables — `events`, `process_snapshots`, `port_snapshots` — that
+/// otherwise grow without bound. Persisted the same way as
+/// `NotificationSettings`, under `settings.key = 'retention_settings'`.
+/// `0` means "keep forever" for a given table.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RetentionSettings {
+    pub events_days: u32,
+    pub process_snapshots_days: u32,
+    pub port_snapshots_days: u32,
+}
+
+impl Default for RetentionSettings {
+    fn default() -> Self {
+        Self {
+            events_days: 30,
+            process_snapshots_days: 7,
+            port_snapshots_days: 7,
+        }
+    }
+}

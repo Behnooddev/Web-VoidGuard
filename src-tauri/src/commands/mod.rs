@@ -7,6 +7,7 @@ pub mod network;
 pub mod notifications;
 pub mod ports;
 pub mod process;
+pub mod retention;
 pub mod risk;
 pub mod scan;
 pub mod security_score;

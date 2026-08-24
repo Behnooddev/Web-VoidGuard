@@ -18,6 +18,8 @@ import type {
 } from "@/types/firewall";
 import type {
   NotificationSettings,
+  RetentionCleanupResult,
+  RetentionSettings,
   ScanProgress,
   ScanResult,
   ScanType,
@@ -172,6 +174,18 @@ export function getNotificationSettings(): Promise<NotificationSettings> {
 
 export function setNotificationSettings(settings: NotificationSettings): Promise<void> {
   return invoke("set_notification_settings", { settings });
+}
+
+export function getRetentionSettings(): Promise<RetentionSettings> {
+  return invoke("get_retention_settings");
+}
+
+export function setRetentionSettings(settings: RetentionSettings): Promise<void> {
+  return invoke("set_retention_settings", { settings });
+}
+
+export function runRetentionCleanup(): Promise<RetentionCleanupResult> {
+  return invoke("run_retention_cleanup");
 }
 
 export function onSecurityScoreUpdated(

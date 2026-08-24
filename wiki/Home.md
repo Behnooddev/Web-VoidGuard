@@ -9,7 +9,7 @@ correlation, risk scoring, and a full audit trail.
 > Copy the contents of `wiki/*.md` into the corresponding Wiki pages
 > (Home, Architecture, Getting-Started, Security-Model, Port-Control,
 > Roadmap, FAQ) via the repo's **Wiki** tab, or clone the wiki repo
-> (`<repo>.wiki.git`) and drop these files in directly.
+> (`Web-VoidGuard.wiki.git`) and drop these files in directly.
 
 ## Pages
 
@@ -24,9 +24,8 @@ correlation, risk scoring, and a full audit trail.
 
 ## Quick links
 
-- [README](https://github.com/OWNER/voidguard/blob/main/README.md)
-- [Architecture doc](https://github.com/OWNER/voidguard/blob/main/ARCHITECTURE.md)
-- [Security doc](https://github.com/OWNER/voidguard/blob/main/SECURITY.md)
-- [Project site (GitHub Pages)](https://OWNER.github.io/voidguard/) — informational only, not a control panel
+- [README](https://github.com/Behnooddev/Web-VoidGuard/blob/main/README.md)
+- [Architecture doc](https://github.com/Behnooddev/Web-VoidGuard/blob/main/ARCHITECTURE.md)
+- [Security doc](https://github.com/Behnooddev/Web-VoidGuard/blob/main/SECURITY.md)
+- [Project site (GitHub Pages)](https://Behnooddev.github.io/Web-VoidGuard/) — informational only, not a control panel
 
-*(Replace `OWNER` with the actual GitHub username/org once the repo is created.)*

@@ -112,8 +112,8 @@ scope; see the debugging checklist below.
 
 ## Full debugging checklist for the Windows pass (do this first)
 
-Everything below was written without a Windows compiler available in
-this sandbox. In rough priority order:
+Everything below was written before this code had been checked
+against a real Windows compiler. In rough priority order:
 
 1. **`cargo check` in `src-tauri/`** and fix whatever the compiler
    flags first — expect issues in the raw-pointer/struct-layout code

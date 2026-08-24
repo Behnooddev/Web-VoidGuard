@@ -19,6 +19,7 @@ use commands::dns::change_dns;
 use commands::scan::{get_recent_scans, run_scan};
 use commands::security_score::{compute_security_score, get_latest_security_score};
 use commands::notifications::{get_notification_settings, set_notification_settings};
+use commands::retention::{get_retention_settings, run_retention_cleanup, set_retention_settings};
 use models::{EventCategory, Severity};
 use tauri::Manager;
 
@@ -62,6 +63,9 @@ fn main() {
             get_latest_security_score,
             get_notification_settings,
             set_notification_settings,
+            get_retention_settings,
+            set_retention_settings,
+            run_retention_cleanup,
         ])
         .setup(|app| {
             // Record app start as the first event of the session and
@@ -81,6 +85,15 @@ fn main() {
                     "VoidGuard started",
                     None,
                 );
+            }
+
+            // Old rows in the high-volume tables (events, snapshots)
+            // are trimmed once per launch against the user's retention
+            // settings, rather than left to grow forever between
+            // visits to the Settings page.
+            {
+                let db_state = handle.state::<db::Db>();
+                let _ = run_retention_cleanup(db_state);
             }
 
             let emitter_handle = handle.clone();
