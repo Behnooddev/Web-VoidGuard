@@ -1,267 +1,949 @@
 <!doctype html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VoidGuard — local Windows security &amp; system monitor</title>
-<meta name="description" content="VoidGuard is a local Windows security and system-monitoring desktop app. This site is documentation only — it does not connect to or control any machine." />
+
+<title>VoidGuard — Local Windows Security &amp; System Monitor</title>
+
+<meta
+name="description"
+content="VoidGuard is a local Windows security and system-monitoring desktop application for visibility, control, scanning, and auditing."
+/>
+
+<meta name="theme-color" content="#0a0a0a" />
+
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+
 <link rel="stylesheet" href="style.css" />
+
+<style>
+  /* Release / download area */
+  .download-section {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .download-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(120, 255, 180, 0.08), transparent 30%),
+      radial-gradient(circle at 20% 80%, rgba(100, 180, 255, 0.06), transparent 30%);
+  }
+
+  .download-panel {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 18px;
+    background: rgba(255,255,255,.035);
+  }
+
+  .download-copy h3 {
+    margin: 0 0 .7rem;
+    font-size: 1.5rem;
+  }
+
+  .download-copy p {
+    max-width: 650px;
+    margin: 0;
+    line-height: 1.7;
+    opacity: .75;
+  }
+
+  .release-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin-top: 1rem;
+  }
+
+  .release-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem .65rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 999px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .75rem;
+    opacity: .85;
+  }
+
+  .download-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .8rem;
+  }
+
+  .download-option {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 145px;
+    padding: 1.2rem;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    background: rgba(255,255,255,.025);
+  }
+
+  .download-option:hover {
+    border-color: rgba(255,255,255,.22);
+    background: rgba(255,255,255,.05);
+  }
+
+  .download-option-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .75rem;
+    letter-spacing: .08em;
+    opacity: .6;
+  }
+
+  .download-option strong {
+    display: block;
+    margin-top: .35rem;
+    font-size: 1.05rem;
+  }
+
+  .download-option small {
+    display: block;
+    margin-top: .35rem;
+    opacity: .55;
+  }
+
+  .download-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    padding: .65rem .8rem;
+    border-radius: 9px;
+    background: rgba(255,255,255,.08);
+    color: inherit;
+    text-decoration: none;
+    font-size: .85rem;
+    font-weight: 600;
+  }
+
+  .download-link:hover {
+    background: rgba(255,255,255,.14);
+  }
+
+  .download-link.is-disabled {
+    opacity: .45;
+    pointer-events: none;
+  }
+
+  .download-fallback {
+    margin-top: 1rem;
+    font-size: .85rem;
+    opacity: .6;
+  }
+
+  .download-fallback a {
+    color: inherit;
+  }
+
+  .hero-version {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin-top: 1rem;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .78rem;
+    opacity: .65;
+  }
+
+  .hero-version-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  @media (max-width: 800px) {
+    .download-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .download-options {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
 </head>
+
 <body>
 
 <div class="disclaimer-bar">
-  This site is documentation only — informational and educational. It has no connection to, and cannot control, any device. VoidGuard is a desktop app you run and control locally.
+  This site is documentation only — informational and educational.
+  It has no connection to, and cannot control, any device.
+  VoidGuard is a desktop application you run and control locally.
 </div>
 
 <header class="nav">
   <div class="nav-inner">
-    <a href="#top" class="wordmark">
-      <span class="wordmark-glyph" aria-hidden="true"></span>
-      VoidGuard
-    </a>
-    <nav class="nav-links">
-      <a href="#watches">What it watches</a>
-      <a href="#boundary">Security boundary</a>
-      <a href="#architecture">Architecture</a>
-      <a href="#roadmap">Roadmap</a>
-      <a href="#start">Get started</a>
-      <a href="https://github.com/Behnooddev/Web-VoidGuard" class="nav-cta">GitHub ↗</a>
-    </nav>
+
+```
+<a href="#top" class="wordmark">
+  <span class="wordmark-glyph" aria-hidden="true"></span>
+  VoidGuard
+</a>
+
+<nav class="nav-links" aria-label="Main navigation">
+  <a href="#watches">Features</a>
+  <a href="#boundary">Security</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#roadmap">Status</a>
+  <a href="#download" class="nav-cta">Download</a>
+  <a href="https://github.com/Behnooddev/Web-VoidGuard" class="nav-cta">
+    GitHub ↗
+  </a>
+</nav>
+```
+
   </div>
 </header>
 
 <main id="top">
 
+  <!-- HERO -->
+
   <section class="hero">
-    <div class="hero-copy">
-      <p class="eyebrow">Local Windows security &amp; system monitor</p>
-      <h1>See everything your machine is doing.<br>Control none of it remotely.</h1>
-      <p class="hero-sub">
-        VoidGuard watches processes, open ports, services, the firewall,
-        startup entries, and file changes on the Windows machine it runs
-        on — and keeps a complete, tamper-evident audit trail of every
-        change it makes. There is no remote access, no shell execution,
-        and no hidden channel. Ever.
-      </p>
-      <div class="hero-actions">
-        <a href="https://github.com/Behnooddev/Web-VoidGuard" class="btn btn-primary">View source on GitHub</a>
-        <a href="https://github.com/Behnooddev/Web-VoidGuard/wiki" class="btn btn-ghost">Read the wiki</a>
-      </div>
-      <p class="hero-note">Open source · MIT licensed · Windows 10/11</p>
+
+```
+<div class="hero-copy">
+
+  <p class="eyebrow">
+    Local Windows security &amp; system monitor
+  </p>
+
+  <h1>
+    See what your machine is doing.
+    <br>
+    Keep control local.
+  </h1>
+
+  <p class="hero-sub">
+    VoidGuard monitors processes, ports, services, networking,
+    firewall rules, DNS, startup locations, file integrity,
+    security events, and system risk — directly on the Windows
+    machine it runs on.
+  </p>
+
+  <div class="hero-actions">
+
+    <a href="#download" class="btn btn-primary">
+      Download VoidGuard
+    </a>
+
+    <a
+      href="https://github.com/Behnooddev/Web-VoidGuard"
+      class="btn btn-ghost"
+    >
+      View source on GitHub
+    </a>
+
+  </div>
+
+  <div class="hero-version">
+    <span class="hero-version-dot"></span>
+    <span id="hero-release">Latest Windows release</span>
+  </div>
+
+  <p class="hero-note">
+    Open source · MIT licensed · Windows 10/11
+  </p>
+
+</div>
+
+<div class="readout" aria-hidden="true">
+
+  <div class="readout-scanline"></div>
+
+  <div class="readout-row">
+    <span class="readout-label">SECURITY SCORE</span>
+    <span class="readout-value readout-value--accent">
+      87<span class="readout-unit">/100</span>
+    </span>
+  </div>
+
+  <div class="readout-grid">
+
+    <div class="readout-cell">
+      <span class="readout-label">FIREWALL</span>
+      <span class="readout-status readout-status--ok">
+        Protected
+      </span>
     </div>
 
-    <div class="readout" aria-hidden="true">
-      <div class="readout-scanline"></div>
-      <div class="readout-row">
-        <span class="readout-label">SECURITY SCORE</span>
-        <span class="readout-value readout-value--accent">87<span class="readout-unit">/100</span></span>
-      </div>
-      <div class="readout-grid">
-        <div class="readout-cell">
-          <span class="readout-label">FIREWALL</span>
-          <span class="readout-status readout-status--ok">Protected</span>
-        </div>
-        <div class="readout-cell">
-          <span class="readout-label">NETWORK</span>
-          <span class="readout-status readout-status--ok">Connected</span>
-        </div>
-        <div class="readout-cell">
-          <span class="readout-label">OPEN PORTS</span>
-          <span class="readout-value">8</span>
-        </div>
-        <div class="readout-cell">
-          <span class="readout-label">ALERTS</span>
-          <span class="readout-value readout-value--warn">3</span>
-        </div>
-      </div>
-      <div class="readout-feed">
-        <div class="readout-feed-row"><span class="dot dot--info"></span>System started</div>
-        <div class="readout-feed-row"><span class="dot dot--warn"></span>New listening TCP port detected</div>
-        <div class="readout-feed-row"><span class="dot dot--info"></span>Firewall rule added — port 8443</div>
-      </div>
-      <p class="readout-caption">Illustrative — mirrors the real dashboard layout, not live data.</p>
+    <div class="readout-cell">
+      <span class="readout-label">NETWORK</span>
+      <span class="readout-status readout-status--ok">
+        Connected
+      </span>
     </div>
+
+    <div class="readout-cell">
+      <span class="readout-label">OPEN PORTS</span>
+      <span class="readout-value">8</span>
+    </div>
+
+    <div class="readout-cell">
+      <span class="readout-label">ALERTS</span>
+      <span class="readout-value readout-value--warn">3</span>
+    </div>
+
+  </div>
+
+  <div class="readout-feed">
+
+    <div class="readout-feed-row">
+      <span class="dot dot--info"></span>
+      System started
+    </div>
+
+    <div class="readout-feed-row">
+      <span class="dot dot--warn"></span>
+      New listening TCP port detected
+    </div>
+
+    <div class="readout-feed-row">
+      <span class="dot dot--info"></span>
+      Firewall rule added — port 8443
+    </div>
+
+  </div>
+
+  <p class="readout-caption">
+    Illustrative UI — not live system data.
+  </p>
+
+</div>
+```
+
   </section>
+
+  <!-- DOWNLOAD -->
+
+  <section id="download" class="section download-section">
+
+```
+<p class="eyebrow">Get VoidGuard</p>
+
+<h2>
+  Download. Install. Run locally.
+</h2>
+
+<div class="download-panel">
+
+  <div class="download-copy">
+
+    <h3 id="release-title">
+      Latest Windows release
+    </h3>
+
+    <p>
+      You don't need Rust, Node.js, Visual Studio, or any development
+      tools to use the released application. Download the installer,
+      run it, and VoidGuard is ready to go.
+    </p>
+
+    <div class="release-meta">
+      <span class="release-badge">Windows 10/11</span>
+      <span class="release-badge">x64</span>
+      <span class="release-badge">MSI + EXE</span>
+    </div>
+
+  </div>
+
+  <div class="download-options">
+
+    <div class="download-option">
+
+      <div>
+        <span class="download-option-label">
+          WINDOWS INSTALLER
+        </span>
+
+        <strong>MSI</strong>
+
+        <small>
+          Windows Installer package
+        </small>
+      </div>
+
+      <a
+        id="msi-download"
+        href="https://github.com/Behnooddev/Web-VoidGuard/releases/latest"
+        class="download-link"
+      >
+        Download MSI ↓
+      </a>
+
+    </div>
+
+
+    <div class="download-option">
+
+      <div>
+        <span class="download-option-label">
+          WINDOWS INSTALLER
+        </span>
+
+        <strong>EXE</strong>
+
+        <small>
+          NSIS executable installer
+        </small>
+      </div>
+
+      <a
+        id="exe-download"
+        href="https://github.com/Behnooddev/Web-VoidGuard/releases/latest"
+        class="download-link"
+      >
+        Download EXE ↓
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+<p class="download-fallback">
+  Looking for release notes, checksums, previous versions, or source
+  archives?
+  <a href="https://github.com/Behnooddev/Web-VoidGuard/releases">
+    View all releases on GitHub →
+  </a>
+</p>
+```
+
+  </section>
+
+  <!-- FEATURES -->
 
   <section id="watches" class="section">
-    <p class="eyebrow">What it watches</p>
-    <h2>One local view of the whole machine.</h2>
-    <div class="feature-grid">
-      <article class="feature">
-        <h3>Processes &amp; ports</h3>
-        <p>Every running process and every listening TCP/UDP port, with the owning process resolved — see it, terminate it, or open/close the port through the native Windows Firewall API.</p>
-      </article>
-      <article class="feature">
-        <h3>Firewall &amp; DNS</h3>
-        <p>Inspect and manage firewall rules and per-adapter DNS configuration through typed, validated requests — never a shell command.</p>
-      </article>
-      <article class="feature">
-        <h3>Services</h3>
-        <p>Windows services with status, startup type, and publisher, with confirmation required before anything disruptive.</p>
-      </article>
-      <article class="feature">
-        <h3>File integrity</h3>
-        <p>Watches security-sensitive and user-configured locations for creation, deletion, modification, and signer changes — without continuously scanning the whole disk.</p>
-      </article>
-      <article class="feature">
-        <h3>Startup &amp; persistence</h3>
-        <p>Run/RunOnce keys, startup folders, scheduled tasks, and services — classified as known, unknown, or suspicious, with the evidence shown, never a bare verdict.</p>
-      </article>
-      <article class="feature">
-        <h3>Events, risk &amp; audit</h3>
-        <p>A correlated event timeline, a risk engine that scores combinations of signals rather than isolated ones, and an append-only audit log of every action VoidGuard itself took.</p>
-      </article>
-    </div>
+
+```
+<p class="eyebrow">What it watches</p>
+
+<h2>
+  One local view of the whole machine.
+</h2>
+
+<div class="feature-grid">
+
+  <article class="feature">
+    <h3>Processes &amp; ports</h3>
+    <p>
+      Inspect running processes and listening TCP/UDP ports,
+      resolve owning processes, and manage processes or firewall
+      access through native Windows APIs.
+    </p>
+  </article>
+
+  <article class="feature">
+    <h3>Firewall &amp; DNS</h3>
+    <p>
+      Inspect and manage Windows Firewall rules and per-adapter
+      DNS configuration through typed and validated requests.
+    </p>
+  </article>
+
+  <article class="feature">
+    <h3>Services</h3>
+    <p>
+      Inspect Windows services, their status, startup type,
+      and publisher, with confirmation before disruptive actions.
+    </p>
+  </article>
+
+  <article class="feature">
+    <h3>File integrity</h3>
+    <p>
+      Monitor security-sensitive and user-configured locations
+      for creation, deletion, modification, and signer changes.
+    </p>
+  </article>
+
+  <article class="feature">
+    <h3>Startup &amp; persistence</h3>
+    <p>
+      Inspect Run/RunOnce keys, startup folders, scheduled tasks,
+      and services, with evidence shown alongside classifications.
+    </p>
+  </article>
+
+  <article class="feature">
+    <h3>Events, risk &amp; audit</h3>
+    <p>
+      Correlate security events, score combinations of signals,
+      and maintain a local audit trail of actions taken by VoidGuard.
+    </p>
+  </article>
+
+</div>
+```
+
   </section>
+
+  <!-- SECURITY BOUNDARY -->
 
   <section id="boundary" class="section section--dark">
-    <p class="eyebrow">Security boundary</p>
-    <h2>What VoidGuard will never do.</h2>
-    <div class="boundary-layout">
-      <ul class="never-list">
-        <li>Execute arbitrary shell, <code>cmd.exe</code>, or PowerShell commands</li>
-        <li>Accept a free-form command string from the UI and run it</li>
-        <li>Provide remote control, a remote shell, or any covert channel</li>
-        <li>Install hidden or undocumented persistence</li>
-        <li>Collect credentials, log keystrokes, or scrape the clipboard</li>
-        <li>Disable or bypass Windows Defender or other security software</li>
-        <li>Hide its own process, files, or network activity</li>
-      </ul>
-      <div class="boundary-flow">
-        <p class="boundary-flow-label">Every privileged action follows one path:</p>
-        <div class="flow-steps">
-          <span class="flow-step">Typed request</span>
-          <span class="flow-arrow">→</span>
-          <span class="flow-step">Validated in Rust</span>
-          <span class="flow-arrow">→</span>
-          <span class="flow-step">Native Windows API</span>
-          <span class="flow-arrow">→</span>
-          <span class="flow-step">Audit log entry</span>
-        </div>
-        <p class="boundary-flow-note">No exceptions — recorded whether it succeeds or fails.</p>
-      </div>
+
+```
+<p class="eyebrow">Security boundary</p>
+
+<h2>
+  What VoidGuard will never do.
+</h2>
+
+<div class="boundary-layout">
+
+  <ul class="never-list">
+
+    <li>
+      Execute arbitrary shell, <code>cmd.exe</code>, or PowerShell commands
+    </li>
+
+    <li>
+      Accept a free-form command string from the UI and execute it
+    </li>
+
+    <li>
+      Provide remote control, a remote shell, or a covert channel
+    </li>
+
+    <li>
+      Install hidden or undocumented persistence
+    </li>
+
+    <li>
+      Collect credentials, log keystrokes, or scrape the clipboard
+    </li>
+
+    <li>
+      Disable or bypass Windows Defender or other security software
+    </li>
+
+    <li>
+      Hide its own process, files, or network activity
+    </li>
+
+  </ul>
+
+  <div class="boundary-flow">
+
+    <p class="boundary-flow-label">
+      Every privileged action follows one path:
+    </p>
+
+    <div class="flow-steps">
+
+      <span class="flow-step">Typed request</span>
+      <span class="flow-arrow">→</span>
+
+      <span class="flow-step">Validated in Rust</span>
+      <span class="flow-arrow">→</span>
+
+      <span class="flow-step">Native Windows API</span>
+      <span class="flow-arrow">→</span>
+
+      <span class="flow-step">Audit log entry</span>
+
     </div>
-    <p class="boundary-link"><a href="https://github.com/Behnooddev/Web-VoidGuard/blob/main/SECURITY.md">Read the full security model →</a></p>
+
+    <p class="boundary-flow-note">
+      No exceptions — recorded whether it succeeds or fails.
+    </p>
+
+  </div>
+
+</div>
+
+<p class="boundary-link">
+  <a href="https://github.com/Behnooddev/Web-VoidGuard/blob/main/SECURITY.md">
+    Read the full security model →
+  </a>
+</p>
+```
+
   </section>
+
+  <!-- ARCHITECTURE -->
 
   <section id="architecture" class="section">
-    <p class="eyebrow">Architecture</p>
-    <h2>Four layers, one direction.</h2>
-    <div class="arch-diagram">
-      <div class="arch-layer">React UI</div>
-      <span class="arch-arrow">↓ typed IPC only</span>
-      <div class="arch-layer">Rust command handlers</div>
-      <span class="arch-arrow">↓</span>
-      <div class="arch-layer">Monitoring &amp; security services</div>
-      <span class="arch-arrow">↓</span>
-      <div class="arch-layer">Windows adapters (native APIs, no shell)</div>
-    </div>
-    <p class="arch-note">
-      Tauri + React + TypeScript on the frontend, Rust + SQLite on the
-      backend. Full breakdown of every module, its status, and the
-      database schema is in the
-      <a href="https://github.com/Behnooddev/Web-VoidGuard/blob/main/ARCHITECTURE.md">architecture doc</a>.
-    </p>
+
+```
+<p class="eyebrow">Architecture</p>
+
+<h2>
+  Four layers, one direction.
+</h2>
+
+<div class="arch-diagram">
+
+  <div class="arch-layer">
+    React UI
+  </div>
+
+  <span class="arch-arrow">
+    ↓ typed IPC only
+  </span>
+
+  <div class="arch-layer">
+    Rust command handlers
+  </div>
+
+  <span class="arch-arrow">
+    ↓
+  </span>
+
+  <div class="arch-layer">
+    Monitoring &amp; security services
+  </div>
+
+  <span class="arch-arrow">
+    ↓
+  </span>
+
+  <div class="arch-layer">
+    Windows adapters — native APIs, no shell
+  </div>
+
+</div>
+
+<p class="arch-note">
+  Tauri + React + TypeScript on the frontend,
+  Rust + SQLite on the backend.
+  See the
+  <a href="https://github.com/Behnooddev/Web-VoidGuard/blob/main/ARCHITECTURE.md">
+    architecture document
+  </a>
+  for the complete module and data-flow breakdown.
+</p>
+```
+
   </section>
+
+  <!-- ROADMAP / STATUS -->
 
   <section id="roadmap" class="section section--dark">
-    <p class="eyebrow">Roadmap</p>
-    <h2>Built in phases, one handoff at a time.</h2>
-    <ol class="roadmap">
-      <li class="roadmap-item roadmap-item--done">
-        <span class="roadmap-index">01</span>
-        <div>
-          <h3>App shell &amp; monitoring backbone</h3>
-          <p>Tauri setup, dashboard, SQLite schema, event + audit log backend.</p>
-        </div>
-        <span class="roadmap-status roadmap-status--done">Done</span>
-      </li>
-      <li class="roadmap-item roadmap-item--done">
-        <span class="roadmap-index">02</span>
-        <div>
-          <h3>Processes, ports, network, services</h3>
-          <p>Process manager, open-port monitoring/control, network adapters, and services manager are all live.</p>
-        </div>
-        <span class="roadmap-status roadmap-status--done">Done</span>
-      </li>
-      <li class="roadmap-item roadmap-item--done">
-        <span class="roadmap-index">03</span>
-        <div>
-          <h3>File integrity &amp; startup monitoring</h3>
-          <p>Filesystem watcher, persistence-location scanning, event timeline, and a starter risk-correlation engine are live. Scheduled Tasks not yet covered.</p>
-        </div>
-        <span class="roadmap-status roadmap-status--done">Done</span>
-      </li>
-      <li class="roadmap-item roadmap-item--done">
-        <span class="roadmap-index">04</span>
-        <div>
-          <h3>Full firewall &amp; DNS management</h3>
-          <p>Complete rule management beyond single-port control, per-adapter DNS configuration.</p>
-        </div>
-        <span class="roadmap-status roadmap-status--done">Done</span>
-      </li>
-      <li class="roadmap-item roadmap-item--done">
-        <span class="roadmap-index">05</span>
-        <div>
-          <h3>Scanning &amp; scoring</h3>
-          <p>Quick/system/network/startup/integrity scans, explained security scoring, notifications.</p>
-        </div>
-        <span class="roadmap-status roadmap-status--done">Done</span>
-      </li>
-      <li class="roadmap-item">
-        <span class="roadmap-index">06</span>
-        <div>
-          <h3>Hardening &amp; release</h3>
-          <p>Testing, retention policies, performance pass, Windows packaging.</p>
-        </div>
-        <span class="roadmap-status">Planned</span>
-      </li>
-    </ol>
+
+```
+<p class="eyebrow">Development status</p>
+
+<h2>
+  Built in phases. Now released.
+</h2>
+
+<ol class="roadmap">
+
+  <li class="roadmap-item roadmap-item--done">
+
+    <span class="roadmap-index">01</span>
+
+    <div>
+      <h3>App shell &amp; monitoring backbone</h3>
+      <p>
+        Tauri setup, dashboard, SQLite schema,
+        event and audit-log backend.
+      </p>
+    </div>
+
+    <span class="roadmap-status roadmap-status--done">
+      Done
+    </span>
+
+  </li>
+
+
+  <li class="roadmap-item roadmap-item--done">
+
+    <span class="roadmap-index">02</span>
+
+    <div>
+      <h3>Processes, ports, network, services</h3>
+      <p>
+        Process manager, open-port monitoring,
+        network adapters, and services manager.
+      </p>
+    </div>
+
+    <span class="roadmap-status roadmap-status--done">
+      Done
+    </span>
+
+  </li>
+
+
+  <li class="roadmap-item roadmap-item--done">
+
+    <span class="roadmap-index">03</span>
+
+    <div>
+      <h3>File integrity &amp; startup monitoring</h3>
+      <p>
+        Filesystem monitoring, persistence locations,
+        scheduled tasks, event timeline, and risk correlation.
+      </p>
+    </div>
+
+    <span class="roadmap-status roadmap-status--done">
+      Done
+    </span>
+
+  </li>
+
+
+  <li class="roadmap-item roadmap-item--done">
+
+    <span class="roadmap-index">04</span>
+
+    <div>
+      <h3>Full firewall &amp; DNS management</h3>
+      <p>
+        Complete Windows Firewall rule management
+        and per-adapter DNS configuration.
+      </p>
+    </div>
+
+    <span class="roadmap-status roadmap-status--done">
+      Done
+    </span>
+
+  </li>
+
+
+  <li class="roadmap-item roadmap-item--done">
+
+    <span class="roadmap-index">05</span>
+
+    <div>
+      <h3>Scanning &amp; security scoring</h3>
+      <p>
+        System, network, startup, and integrity scans,
+        explained security scoring, and notifications.
+      </p>
+    </div>
+
+    <span class="roadmap-status roadmap-status--done">
+      Done
+    </span>
+
+  </li>
+
+
+  <li class="roadmap-item roadmap-item--done">
+
+    <span class="roadmap-index">06</span>
+
+    <div>
+      <h3>Hardening &amp; release</h3>
+      <p>
+        Retention policies, performance work,
+        Windows packaging, MSI/EXE installers,
+        and public release distribution.
+      </p>
+    </div>
+
+    <span class="roadmap-status roadmap-status--done">
+      Released
+    </span>
+
+  </li>
+
+</ol>
+```
+
   </section>
 
+  <!-- SOURCE -->
+
   <section id="start" class="section">
-    <p class="eyebrow">Get started</p>
-    <h2>Run it locally.</h2>
-    <p class="section-intro">
-      VoidGuard is a desktop app — this website never talks to it.
-      Building it from source runs entirely on your own machine.
-    </p>
-    <pre class="code-block"><code>git clone https://github.com/Behnooddev/Web-VoidGuard.git
-cd voidguard
+
+```
+<p class="eyebrow">For developers</p>
+
+<h2>
+  Want to build it yourself?
+</h2>
+
+<p class="section-intro">
+  End users should download the pre-built installer above.
+  Developers can clone the repository and run VoidGuard from source.
+</p>
+
+<pre class="code-block"><code>git clone https://github.com/Behnooddev/Web-VoidGuard.git
+```
+
+cd Web-VoidGuard
 npm install
 npm run tauri dev</code></pre>
-    <p class="section-intro">
-      Full setup, prerequisites, and how to build a release installer
-      are in the <a href="https://github.com/Behnooddev/Web-VoidGuard/wiki/Getting-Started">Getting Started wiki page</a>.
-    </p>
+
+```
+<p class="section-intro">
+  Full prerequisites, development setup, architecture,
+  testing, and release instructions are available in the
+  <a href="https://github.com/Behnooddev/Web-VoidGuard/wiki">
+    GitHub Wiki
+  </a>.
+</p>
+```
+
   </section>
 
 </main>
 
+<!-- FOOTER -->
+
 <footer class="footer">
+
   <div class="footer-inner">
-    <div>
-      <span class="wordmark wordmark--footer">VoidGuard</span>
-      <p class="footer-note">Local Windows security &amp; system monitoring. MIT licensed.</p>
-    </div>
-    <div class="footer-links">
-      <a href="https://github.com/Behnooddev/Web-VoidGuard">GitHub</a>
-      <a href="https://github.com/Behnooddev/Web-VoidGuard/wiki">Wiki</a>
-      <a href="https://github.com/Behnooddev/Web-VoidGuard/blob/main/SECURITY.md">Security model</a>
-      <a href="https://github.com/Behnooddev/Web-VoidGuard/blob/main/LICENSE">License</a>
-    </div>
-  </div>
-  <p class="footer-disclaimer">
-    This page is a static, informational site hosted on GitHub Pages.
-    It displays no live data, requires no login, and cannot access,
-    monitor, or control any device — including the one you're reading
-    this on.
+
+```
+<div>
+
+  <span class="wordmark wordmark--footer">
+    VoidGuard
+  </span>
+
+  <p class="footer-note">
+    Local Windows security &amp; system monitoring.
+    MIT licensed.
   </p>
+
+</div>
+
+<div class="footer-links">
+
+  <a href="#download">Download</a>
+
+  <a href="https://github.com/Behnooddev/Web-VoidGuard">
+    GitHub
+  </a>
+
+  <a href="https://github.com/Behnooddev/Web-VoidGuard/wiki">
+    Wiki
+  </a>
+
+  <a href="https://github.com/Behnooddev/Web-VoidGuard/blob/main/SECURITY.md">
+    Security model
+  </a>
+
+  <a href="https://github.com/Behnooddev/Web-VoidGuard/blob/main/LICENSE">
+    License
+  </a>
+
+</div>
+```
+
+  </div>
+
+  <p class="footer-disclaimer">
+    This page is a static informational site hosted on GitHub Pages.
+    It displays no live system data, requires no login, and cannot
+    access, monitor, or control any device — including the device
+    you're reading this on.
+  </p>
+
 </footer>
+
+<script>
+  /*
+   * Automatically connect the download buttons to the latest
+   * GitHub Release assets.
+   *
+   * No GitHub token is required because the repository is public.
+   */
+
+  const REPO = "Behnooddev/Web-VoidGuard";
+  const RELEASES_URL =
+    `https://api.github.com/repos/${REPO}/releases/latest`;
+
+  const releaseTitle = document.getElementById("release-title");
+  const heroRelease = document.getElementById("hero-release");
+
+  const msiButton = document.getElementById("msi-download");
+  const exeButton = document.getElementById("exe-download");
+
+  function setFallback(button) {
+    button.href =
+      "https://github.com/Behnooddev/Web-VoidGuard/releases/latest";
+  }
+
+  function findAsset(assets, extension) {
+    return assets.find(asset =>
+      asset.name.toLowerCase().endsWith(extension)
+    );
+  }
+
+  async function loadLatestRelease() {
+    try {
+      const response = await fetch(RELEASES_URL, {
+        headers: {
+          Accept: "application/vnd.github+json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("GitHub API request failed");
+      }
+
+      const release = await response.json();
+
+      const version = release.tag_name || "Latest release";
+
+      releaseTitle.textContent = version;
+      heroRelease.textContent = `${version} · Windows`;
+
+      const msi = findAsset(release.assets || [], ".msi");
+      const exe = findAsset(release.assets || [], ".exe");
+
+      if (msi) {
+        msiButton.href = msi.browser_download_url;
+        msiButton.textContent = "Download MSI ↓";
+      } else {
+        setFallback(msiButton);
+      }
+
+      if (exe) {
+        exeButton.href = exe.browser_download_url;
+        exeButton.textContent = "Download EXE ↓";
+      } else {
+        setFallback(exeButton);
+      }
+
+    } catch (error) {
+      console.warn("Could not load latest VoidGuard release:", error);
+
+      setFallback(msiButton);
+      setFallback(exeButton);
+    }
+  }
+
+  loadLatestRelease();
+</script>
 
 </body>
 </html>
