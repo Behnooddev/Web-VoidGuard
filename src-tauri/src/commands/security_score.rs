@@ -59,7 +59,7 @@ pub fn compute_security_score(
                 .count();
 
             if suspicious > 0 {
-                let impact = -(10 * suspicious.min(3)) as i32; // cap at -30
+                let impact = -((10 * suspicious.min(3)) as i32); // cap at -30
                 score += impact;
                 reasons.push(ScoreReason {
                     label: format!("{suspicious} suspicious startup entr{}", if suspicious == 1 { "y" } else { "ies" }),
@@ -68,7 +68,7 @@ pub fn compute_security_score(
                 });
             }
             if unknown > 0 {
-                let impact = -(2 * unknown.min(10)) as i32; // cap at -20
+                let impact = -((2 * unknown.min(10)) as i32); // cap at -20
                 score += impact;
                 reasons.push(ScoreReason {
                     label: format!("{unknown} unrecognized (unsigned-status-unknown) startup entr{}", if unknown == 1 { "y" } else { "ies" }),
@@ -86,7 +86,7 @@ pub fn compute_security_score(
             .filter(|p| !matches!(p.risk, crate::models::PortRisk::Low))
             .count();
         if elevated > 0 {
-            let impact = -(3 * elevated.min(5)) as i32; // cap at -15
+            let impact = -((3 * elevated.min(5)) as i32); // cap at -15
             score += impact;
             reasons.push(ScoreReason {
                 label: format!("{elevated} listening port(s) outside the well-known/low-risk set"),
@@ -194,7 +194,7 @@ mod windows_impl {
                 (NET_FW_PROFILE2_PRIVATE, "Private"),
                 (NET_FW_PROFILE2_PUBLIC, "Public"),
             ] {
-                let enabled = policy.FirewallEnabled(profile)?;
+                let enabled = policy.get_FirewallEnabled(profile)?;
                 if !enabled.as_bool() {
                     disabled.push(label.to_string());
                 }
