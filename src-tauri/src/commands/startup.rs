@@ -213,7 +213,7 @@ mod windows_impl {
         if let Ok(tasks) = folder.GetTasks(TASK_ENUM_HIDDEN.0) {
             if let Ok(count) = tasks.Count() {
                 for i in 1..=count {
-                    if let Ok(task) = tasks.get_Item(VARIANT::from(i)) {
+                    if let Ok(task) = tasks.get_Item(&VARIANT::from(i)) {
                         if let Some(entry) = task_to_entry(&task) {
                             entries.push(entry);
                         }
@@ -224,7 +224,7 @@ mod windows_impl {
         if let Ok(subfolders) = folder.GetFolders(0) {
             if let Ok(count) = subfolders.Count() {
                 for i in 1..=count {
-                    if let Ok(sub) = subfolders.get_Item(VARIANT::from(i)) {
+                    if let Ok(sub) = subfolders.get_Item(&VARIANT::from(i)) {
                         walk_task_folder(&sub, entries);
                     }
                 }
@@ -502,7 +502,7 @@ mod windows_impl {
         if let Ok(tasks) = folder.GetTasks(TASK_ENUM_HIDDEN.0) {
             if let Ok(count) = tasks.Count() {
                 for i in 1..=count {
-                    if let Ok(task) = tasks.get_Item(VARIANT::from(i)) {
+                    if let Ok(task) = tasks.get_Item(&VARIANT::from(i)) {
                         if let Some(entry) = task_to_entry(&task) {
                             if entry.name == name && entry.command == command {
                                 if let Ok(path) = task.Path().map(|p| p.to_string()) {
@@ -521,7 +521,7 @@ mod windows_impl {
         if let Ok(subfolders) = folder.GetFolders(0) {
             if let Ok(count) = subfolders.Count() {
                 for i in 1..=count {
-                    if let Ok(sub) = subfolders.get_Item(VARIANT::from(i)) {
+                    if let Ok(sub) = subfolders.get_Item(&VARIANT::from(i)) {
                         if let Some(found) = find_task(&sub, name, command) {
                             return Some(found);
                         }

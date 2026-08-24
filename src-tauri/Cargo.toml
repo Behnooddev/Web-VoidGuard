@@ -9,7 +9,7 @@ edition = "2021"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = ["shell-open", "system-tray", "dialog"] }
+tauri = { version = "1", features = [ "dialog-confirm", "window-start-dragging", "window-unmaximize", "window-maximize", "dialog-message", "notification-all", "window-unminimize", "window-minimize", "window-show", "window-close", "window-hide", "shell-open", "system-tray", "dialog"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sysinfo = "0.30"
