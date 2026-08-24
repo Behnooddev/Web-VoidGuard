@@ -16,6 +16,13 @@ import type {
   FirewallRule,
   SetFirewallRuleEnabledRequest,
 } from "@/types/firewall";
+import type {
+  NotificationSettings,
+  ScanProgress,
+  ScanResult,
+  ScanType,
+  SecurityScore,
+} from "@/types/scan";
 
 /**
  * Every function here corresponds 1:1 to a #[tauri::command] in the
@@ -141,6 +148,40 @@ export function deleteFirewallRule(name: string): Promise<void> {
 /** Applies per-interface DNS settings. Requires prior UI confirmation. */
 export function changeDns(req: DnsSettingsRequest): Promise<void> {
   return wrapAppError(invoke("change_dns", { req }));
+}
+
+export function runScan(scan_type: ScanType, custom_steps?: string[]): Promise<ScanResult> {
+  return invoke("run_scan", { scanType: scan_type, customSteps: custom_steps ?? null });
+}
+
+export function getRecentScans(limit = 20): Promise<ScanResult[]> {
+  return invoke("get_recent_scans", { limit });
+}
+
+export function computeSecurityScore(): Promise<SecurityScore> {
+  return invoke("compute_security_score");
+}
+
+export function getLatestSecurityScore(): Promise<SecurityScore | null> {
+  return invoke("get_latest_security_score");
+}
+
+export function getNotificationSettings(): Promise<NotificationSettings> {
+  return invoke("get_notification_settings");
+}
+
+export function setNotificationSettings(settings: NotificationSettings): Promise<void> {
+  return invoke("set_notification_settings", { settings });
+}
+
+export function onSecurityScoreUpdated(
+  cb: (score: SecurityScore) => void
+): Promise<UnlistenFn> {
+  return listen<SecurityScore>("security-score-updated", (event) => cb(event.payload));
+}
+
+export function onScanProgress(cb: (progress: ScanProgress) => void): Promise<UnlistenFn> {
+  return listen<ScanProgress>("scan-progress", (event) => cb(event.payload));
 }
 
 export function onSystemMetrics(

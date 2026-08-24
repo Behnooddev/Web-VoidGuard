@@ -9,6 +9,11 @@ import FilesPage from "@/pages/FilesPage";
 import StartupPage from "@/pages/StartupPage";
 import EventsPage from "@/pages/EventsPage";
 import FirewallPage from "@/pages/FirewallPage";
+import SecurityPage from "@/pages/SecurityPage";
+import ScansPage from "@/pages/ScansPage";
+import HealthPage from "@/pages/HealthPage";
+import SettingsPage from "@/pages/SettingsPage";
+import NotificationManager from "@/components/NotificationManager";
 import PlaceholderPage from "@/pages/PlaceholderPage";
 
 type Theme = "light" | "dark" | "system";
@@ -45,14 +50,12 @@ export default function App() {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
+      <NotificationManager />
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route
-            path="/security"
-            element={<PlaceholderPage title="Security" phase="Phase 5 (security scoring)" />}
-          />
+          <Route path="/security" element={<SecurityPage />} />
           <Route path="/processes" element={<ProcessesPage />} />
           <Route path="/network" element={<NetworkPage />} />
           <Route path="/firewall" element={<FirewallPage />} />
@@ -60,22 +63,13 @@ export default function App() {
           <Route path="/files" element={<FilesPage />} />
           <Route path="/startup" element={<StartupPage />} />
           <Route path="/events" element={<EventsPage />} />
-          <Route
-            path="/scans"
-            element={<PlaceholderPage title="Scans" phase="Phase 5 (scanning system)" />}
-          />
-          <Route
-            path="/health"
-            element={<PlaceholderPage title="Health" phase="Phase 5 (health center)" />}
-          />
+          <Route path="/scans" element={<ScansPage />} />
+          <Route path="/health" element={<HealthPage />} />
           <Route
             path="/audit"
-            element={<PlaceholderPage title="Audit Log" phase="Phase 4 (audit system UI \u2014 backend + DB already live)" />}
+            element={<PlaceholderPage title="Audit Log" phase="Phase 4 (audit system UI — backend + DB already live)" />}
           />
-          <Route
-            path="/settings"
-            element={<PlaceholderPage title="Settings" phase="Phase 6 (configuration management)" />}
-          />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>
     </div>

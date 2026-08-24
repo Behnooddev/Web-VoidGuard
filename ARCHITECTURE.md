@@ -36,11 +36,11 @@ failure — before returning a structured result to the UI.
 | `commands::files` | File-integrity watcher (`notify` crate) over configured scopes | Phase 3 — done (Windows-native, unverified compile) |
 | `commands::startup` | Run/RunOnce keys, Startup folders; scheduled tasks not yet covered | Phase 3 — mostly done (Windows-native, unverified compile) |
 | `commands::risk` | Event correlation → composite risk score | Phase 3 — done, 2 starter rules (Windows-native, unverified compile) |
-| `commands::firewall` | Full rule management (beyond single-port open/close, already done in Phase 2) via WFP/`INetFwPolicy2` COM | Phase 4 |
-| `commands::dns` | Per-interface DNS read/validate/apply | Phase 4 |
-| `commands::scan` | Quick/System/Network/Startup/Integrity/Custom scans | Phase 5 |
-| `commands::security_score` | Aggregate scoring engine with explained reasons | Phase 5 |
-| `commands::notifications` | OS notification dispatch, user-configurable | Phase 5 |
+| `commands::firewall` | Full rule management (beyond single-port open/close, already done in Phase 2) via WFP/`INetFwPolicy2` COM | Phase 4 — done (BSTR/VARIANT_BOOL fix applied — see `handoffs/04-phase-4-handoff.md`) |
+| `commands::dns` | Per-interface DNS read/validate/apply | Phase 4 — done (Windows-native, unverified compile) |
+| `commands::scan` | Quick/System/Network/Startup/Integrity/Custom scans | Phase 5 — done, real progress + findings (Windows-native, unverified compile — see `handoffs/05-phase-5-handoff.md`) |
+| `commands::security_score` | Aggregate scoring engine with explained reasons | Phase 5 — done, 4 signal sources |
+| `commands::notifications` | OS notification dispatch, user-configurable | Phase 5 — done (preferences in Rust, OS dispatch client-side) |
 
 Each module owns its own request/response types in `src-tauri/src/models`
 and its own SQLite table(s) (see `db::init` migrations) — no shared
@@ -97,7 +97,6 @@ is a Phase 6 (Performance/hardening) task, configurable from Settings.
 1. Tauri setup, React shell, sidebar/dashboard, SQLite, event+audit backend — **done**
 2. Process monitoring, network interfaces, open ports, service monitoring — **done** (native Windows code not yet compiled/tested — see `handoffs/02-phase-2-handoff.md`)
 3. File integrity monitoring, startup/persistence monitoring, event engine, risk engine — **mostly done** (scheduled tasks not covered; native Windows code not yet compiled/tested — see `handoffs/03-phase-3-handoff.md`)
-3. File integrity monitoring, startup/persistence monitoring, event engine, risk engine
-4. Firewall management, DNS management, privileged-operation plumbing, audit UI
-5. Scanning system, security scoring, notifications, dashboard polish
+4. Firewall management, DNS management, privileged-operation plumbing, audit UI — **done** (COM string-type bug found and fixed — see `handoffs/04-phase-4-handoff.md`)
+5. Scanning system, security scoring, notifications, dashboard polish — **done** — see `handoffs/05-phase-5-handoff.md`
 6. Testing, performance/retention, hardening, docs, Windows packaging

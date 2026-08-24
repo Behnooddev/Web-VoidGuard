@@ -167,7 +167,58 @@ similar APIs — but the only way to be fully sure is still a real
 `cargo build --target x86_64-pc-windows-msvc` on Windows, which
 remains item #1 for whoever does the next Windows pass.
 
-## Handoff to Phase 5
+## BSTR vs HSTRING fix (from the actual compiler output, 2026-08-23)
+
+A follow-up correction to the note above: the `HSTRING`/`BSTR`/
+`IntoParam` errors were **not**, in fact, symptoms of the
+`SC_HANDLE`/`ENUM_SERVICE_STATE`-family bugs described in the
+previous section — that was an incorrect conclusion reached before
+the actual `cargo build` output was available. When the real compile
+log came back (`npm run tauri dev` on Windows, MSVC toolchain), the
+services/network fixes above had already taken effect — the log shows
+`voidguard v0.1.0` compiling past `services.rs`/`network.rs` cleanly
+— and the only remaining errors (15, all in `firewall.rs` and
+`ports.rs`) were a separate, distinct bug:
+
+**Root cause:** `INetFwRule`/`INetFwPolicy2` are **COM Automation**
+(`IDispatch`-based) interfaces, which take strings as **`BSTR`**, not
+**`HSTRING`**. `HSTRING` is a WinRT string type — a different type
+used by modern WinRT APIs, unrelated to classic COM Automation. Both
+`firewall.rs` (this phase) and `ports.rs` (Phase 2's single-port
+open/close, same COM family) used `HSTRING::from(...)` everywhere
+they should have used `BSTR::from(...)`. Similarly, `SetEnabled(bool)`
+needed `VARIANT_BOOL::from(bool)` — COM Automation's boolean type —
+not a plain Rust `bool`.
+
+**Fix applied** in both files:
+- Every `HSTRING::from(...)` → `BSTR::from(...)` for
+  `SetName`/`SetDescription`/`SetLocalPorts`/`SetRemotePorts`/
+  `SetRemoteAddresses`/`SetApplicationName`/`.Item()`/`.Remove()`.
+- Every `SetEnabled(bool)` → `SetEnabled(VARIANT_BOOL::from(bool))`
+  — confirmed `VARIANT_BOOL: From<bool>` is a real, stable conversion
+  in the `windows` crate before relying on it.
+- Cleaned up the 5 unrelated unused-import warnings visible in the
+  same build log (`ports.rs`, `services.rs`, `startup.rs`, `main.rs`).
+
+**Lesson for future COM Automation code:** if a `windows`-crate error
+mentions `IntoParam<BSTR, ...>` not satisfied for `&HSTRING`, don't
+chase it as a version-conflict issue even though the compiler's
+"multiple different versions of crate `windows_core`" diagnostic noise
+makes it look like one (see the version-graph analysis above — that
+part's conclusion, that the multiple versions are independent and
+harmless, still holds). It's almost always this exact HSTRING-vs-BSTR
+type mismatch. `windows::core::BSTR` is the correct type for any COM
+Automation (`IDispatch`) interface method that takes a string;
+`windows::core::HSTRING` is for WinRT APIs only.
+
+This fix has not yet been verified by an actual successful `cargo
+build` either — applied by reading the compiler's own suggestion in
+the error output (`impl IntoParam<PCWSTR> for &HSTRING` exists, but
+`IntoParam<BSTR>` doesn't) rather than by running the build. **Running
+`cargo check` again on Windows to confirm this specific fix is still
+item #1 for the next session.**
+
+
 
 Phase 5 owner: quick/system/network/startup/integrity/custom scans
 (`commands::scan`), the aggregate security-scoring engine

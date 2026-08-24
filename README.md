@@ -26,17 +26,20 @@ persistence capability of its own — see `SECURITY.md`.
 
 ## Status
 
-This repository currently implements **Phase 1**, **Phase 2**, and
-most of **Phase 3** of the plan in `ARCHITECTURE.md`: app shell,
-dashboard, process manager, open port monitoring/control, network
-adapters, services manager, file integrity monitoring, startup/
-persistence monitoring, a filterable event timeline, and a starter
-risk-correlation engine are all functional. Scheduled Tasks (one of
-several startup-persistence vectors) isn't covered yet. See
-`handoffs/` for the detailed, dated record of what shipped in each
-phase — including a debugging checklist for the native Windows code,
-which has not yet been compiled on an actual Windows machine. Every
-other sidebar page is an explicit, labeled "not implemented yet"
+This repository implements **Phases 1 through 5** of the plan in
+`ARCHITECTURE.md`: app shell, dashboard, process manager, open port
+monitoring/control, network adapters, services manager, file
+integrity monitoring, startup/persistence monitoring, a filterable
+event timeline, a starter risk-correlation engine, full firewall rule
+management, per-interface DNS, a real scanning system, an explained
+security score, and configurable desktop notifications are all
+functional. Scheduled Tasks (one of several startup-persistence
+vectors) and the Audit Log page aren't covered yet. See `handoffs/`
+for the detailed, dated record of what shipped in each phase —
+including a real Windows compile pass in Phase 4 that found and fixed
+an actual bug (see `handoffs/04-phase-4-handoff.md`), and debugging
+checklists for what's still unverified in later phases. Every
+remaining sidebar page is an explicit, labeled "not implemented yet"
 state — nothing in the UI is faked.
 
 ## Stack

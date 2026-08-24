@@ -5,30 +5,41 @@ import {
   HardDrive,
   Clock,
   ListTree,
-  ShieldQuestion,
+  ShieldCheck,
 } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import EmptyState from "@/components/EmptyState";
-import { getRecentEvents, getSystemMetrics, onSystemMetrics } from "@/lib/ipc";
+import {
+  getLatestSecurityScore,
+  getRecentEvents,
+  getSystemMetrics,
+  onSecurityScoreUpdated,
+  onSystemMetrics,
+} from "@/lib/ipc";
 import { formatBytes, formatUptime } from "@/lib/utils";
 import type { SystemEvent, SystemMetrics } from "@/types";
+import type { SecurityScore } from "@/types/scan";
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
   const [events, setEvents] = useState<SystemEvent[]>([]);
+  const [score, setScore] = useState<SecurityScore | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     getSystemMetrics().then(setMetrics).catch((e) => setError(String(e)));
     getRecentEvents(10).then(setEvents).catch(() => {});
+    getLatestSecurityScore().then(setScore).catch(() => {});
 
-    const unlistenPromise = onSystemMetrics(setMetrics);
+    const unlistenMetrics = onSystemMetrics(setMetrics);
+    const unlistenScore = onSecurityScoreUpdated(setScore);
     const interval = setInterval(() => {
       getRecentEvents(10).then(setEvents).catch(() => {});
     }, 5000);
 
     return () => {
-      unlistenPromise.then((unlisten) => unlisten());
+      unlistenMetrics.then((unlisten) => unlisten());
+      unlistenScore.then((unlisten) => unlisten());
       clearInterval(interval);
     };
   }, []);
@@ -93,9 +104,16 @@ export default function Dashboard() {
         />
         <StatCard
           label="Security Score"
-          value="\u2014"
-          subtext="Available from Phase 5"
-          icon={ShieldQuestion}
+          value={score ? String(score.score) : "\u2014"}
+          subtext={
+            score
+              ? score.reasons[0]?.label ?? "No issues found"
+              : "Not calculated yet"
+          }
+          icon={ShieldCheck}
+          tone={
+            !score ? "default" : score.score >= 80 ? "good" : score.score >= 50 ? "warn" : "bad"
+          }
         />
       </div>
 
@@ -106,7 +124,7 @@ export default function Dashboard() {
         {events.length === 0 ? (
           <EmptyState
             title="No events yet"
-            description="Monitoring subsystems (processes, network, firewall, files) come online in later phases and will populate this feed."
+            description="Activity across processes, network, firewall, startup, and files will appear here as it happens."
           />
         ) : (
           <ul className="divide-y divide-border">

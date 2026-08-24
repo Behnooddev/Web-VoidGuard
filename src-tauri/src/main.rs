@@ -16,6 +16,9 @@ use commands::startup::{list_startup_entries, remove_startup_entry};
 use commands::risk::{get_recent_risk_findings, run_risk_analysis};
 use commands::firewall::{create_firewall_rule, delete_firewall_rule, list_firewall_rules, set_firewall_rule_enabled};
 use commands::dns::change_dns;
+use commands::scan::{get_recent_scans, run_scan};
+use commands::security_score::{compute_security_score, get_latest_security_score};
+use commands::notifications::{get_notification_settings, set_notification_settings};
 use models::{EventCategory, Severity};
 use tauri::Manager;
 
@@ -53,6 +56,12 @@ fn main() {
             set_firewall_rule_enabled,
             delete_firewall_rule,
             change_dns,
+            run_scan,
+            get_recent_scans,
+            compute_security_score,
+            get_latest_security_score,
+            get_notification_settings,
+            set_notification_settings,
         ])
         .setup(|app| {
             // Record app start as the first event of the session and
@@ -82,6 +91,27 @@ fn main() {
                     let sys_state = emitter_handle.state::<SysHandle>();
                     if let Ok(metrics) = get_system_metrics(sys_state) {
                         let _ = emitter_handle.emit_all("system-metrics", metrics);
+                    }
+                }
+            });
+
+            // Recompute the security score periodically so the
+            // dashboard stays current without the person needing to
+            // remember to click "recalculate". 10 minutes because
+            // every underlying check here does real enumeration work
+            // (firewall/startup/ports) — this is not free, unlike the
+            // 2-second metrics tick above.
+            let score_handle = handle.clone();
+            tauri::async_runtime::spawn(async move {
+                // tokio::time::interval's first tick resolves
+                // immediately, so the dashboard gets a score right at
+                // startup without a separate one-off call.
+                let mut interval = tokio::time::interval(std::time::Duration::from_secs(600));
+                loop {
+                    interval.tick().await;
+                    let db_state = score_handle.state::<db::Db>();
+                    if let Ok(score) = compute_security_score(score_handle.clone(), db_state) {
+                        let _ = score_handle.emit_all("security-score-updated", score);
                     }
                 }
             });

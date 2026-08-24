@@ -28,11 +28,11 @@ calls the Windows API, and writes an audit entry before returning.
 | File integrity monitoring | ✅ Done (Windows-native, unverified compile) |
 | Startup/persistence monitoring | ✅ Mostly done — Scheduled Tasks not covered (Windows-native, unverified compile) |
 | Event correlation / risk engine | ✅ Done — 2 starter rules |
-| Full firewall rule management | ⏳ Not started (port-level open/close only so far) |
-| DNS management | ⏳ Not started |
-| Scanning system | ⏳ Not started |
-| Security scoring | ⏳ Not started |
-| Notifications | ⏳ Not started |
+| Full firewall rule management | ✅ Done — bug found & fixed during first real compile (see [[Port-Control]] and `handoffs/04-phase-4-handoff.md`) |
+| DNS management | ✅ Done (Windows-native, unverified end-to-end) |
+| Scanning system | ✅ Done — 6 scan types, real progress + findings |
+| Security scoring | ✅ Done — 4 signal sources, auto-recomputed every 10 min |
+| Notifications | ✅ Done — on/off + severity threshold, dispatched client-side |
 
 ## Real-time updates
 

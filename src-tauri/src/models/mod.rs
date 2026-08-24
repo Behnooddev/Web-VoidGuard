@@ -4,10 +4,12 @@ use serde::{Deserialize, Serialize};
 pub mod firewall;
 pub mod ports;
 pub mod monitoring;
+pub mod scan;
 pub mod system_control;
 pub use firewall::*;
 pub use ports::*;
 pub use monitoring::*;
+pub use scan::*;
 pub use system_control::*;
 
 /// Severity level shared across events, alerts, and detection rules.

@@ -3,9 +3,38 @@
 All notable changes to this project are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [Unreleased] — Phase 6 not started
 
-### Added (Phase 4)
+### Added (Phase 5)
+- Scanning system: Quick/System/Network/Startup/Integrity/Custom scans,
+  each running real enumeration steps with live progress and persisted
+  results/findings. New Scans page.
+- Security score: 4-signal explained scoring (firewall status, startup
+  classifications, open port risk, recent risk findings), recomputed
+  automatically every 10 minutes. New Security page; Dashboard's score
+  card is now real.
+- Configurable desktop notifications (on/off + minimum severity),
+  dispatched client-side via Tauri's Notification API against events
+  from the existing event feed. New Settings page (notifications +
+  theme).
+- New Health page: fuller CPU/RAM/per-disk/uptime view, explicit about
+  not showing battery/temperature since Windows can't reliably provide
+  those on all hardware.
+- See `handoffs/05-phase-5-handoff.md` for the full writeup, known
+  gaps, and the Windows-pass checklist.
+
+### Fixed
+- **The exact `HSTRING`/`BSTR`/`IntoParam` compiler errors reported
+  from a real `npm run tauri dev` run** — `INetFwRule`/`INetFwPolicy2`
+  are COM Automation interfaces (`BSTR` strings, `VARIANT_BOOL`
+  booleans), not WinRT (`HSTRING`). Fixed in both `firewall.rs` and
+  `ports.rs`. See `handoffs/04-phase-4-handoff.md`'s "BSTR vs HSTRING
+  fix" section for the full explanation — useful reading before
+  writing any more COM Automation code in this project.
+
+## [Unreleased] — Phase 4
+
+### Added
 - Full Windows Firewall rule management: create/enable-disable/delete
   named rules (not just single-port allow/block) via `INetFwPolicy2`/
   `INetFwRule` COM, tracked locally so the UI doesn't have to enumerate

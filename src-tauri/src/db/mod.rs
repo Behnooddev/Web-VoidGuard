@@ -212,6 +212,14 @@ fn run_migrations(conn: &Connection) -> Result<()> {
             related_event_ids TEXT NOT NULL DEFAULT '[]'
         );
         CREATE INDEX IF NOT EXISTS idx_risk_findings_ts ON risk_findings(timestamp DESC);
+
+        CREATE TABLE IF NOT EXISTS security_scores (
+            id TEXT PRIMARY KEY,
+            calculated_at TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            reasons TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_security_scores_ts ON security_scores(calculated_at DESC);
         "#,
     )?;
 
